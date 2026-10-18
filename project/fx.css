@@ -1,0 +1,859 @@
+/* 视频网页书页版式：页面底 + 边框视频 + 下方独白/流程条 */
+.fx-root {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    background: transparent;
+    pointer-events: none;
+}
+
+.fx-root.page-segment-active {
+    background: #000;
+}
+
+.fx-root.page-segment-active #fx-frame {
+    background: transparent;
+}
+
+#page-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 0;
+    pointer-events: none;
+}
+
+#fx-scene {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* 视频画幅取原片 2520:1080 = 7:3，避免网页端裁切原视频 */
+#fx-frame {
+    position: absolute;
+    left: 3.26%;
+    top: 7.78%;
+    width: 92.74%;
+    aspect-ratio: 7 / 3;
+    overflow: hidden;
+    opacity: 0;
+    will-change: opacity, transform;
+    background: #0d0a07;
+}
+
+.page-stage {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: min(100vw, 197.244vh);
+    aspect-ratio: 3507 / 1778;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.page-stage.active {
+    opacity: 1;
+    background: url("/image/视频/书页.webp") center / 100% 100% no-repeat;
+}
+
+.page-stage video {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    opacity: 0;
+    background: transparent;
+    z-index: 1;
+}
+
+#page-left {
+    left: 8.73%;
+    top: 7.01%;
+    width: 33.45%;
+    height: 75.07%;
+}
+
+#page-right {
+    left: 56.58%;
+    top: 7.01%;
+    width: 33.45%;
+    height: 75.07%;
+}
+
+.page-stage .page-border {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    background: transparent;
+    z-index: 3;
+}
+
+.page-stage .page-mask {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    background: transparent;
+    z-index: 2;
+    /* 只遮住视频内容区，保留视频自带的原书页边框 */
+    clip-path: inset(3.7% 5.2% 4.2% 4.2%);
+}
+
+#page-mask-left {
+    left: 8.73%;
+    top: 7.01%;
+    width: 33.45%;
+    height: 75.07%;
+}
+
+#page-mask-right {
+    left: 56.58%;
+    top: 7.01%;
+    width: 33.45%;
+    height: 75.07%;
+}
+
+#page-border-left {
+    left: 8.73%;
+    top: 7.01%;
+    width: 33.45%;
+    height: 75.07%;
+}
+
+#page-border-right {
+    left: 56.58%;
+    top: 7.01%;
+    width: 33.45%;
+    height: 75.07%;
+}
+
+.page-stage .page-side {
+    position: absolute;
+    object-fit: fill;
+    display: block;
+    opacity: 1;
+    pointer-events: none;
+    background: transparent;
+    z-index: 5;
+    transform: translateY(-112%);
+    will-change: transform, opacity;
+}
+
+#page-bar-left,
+#page-bar-right {
+    width: 100%;
+    z-index: 4;
+    mix-blend-mode: screen;
+    transform: translateY(-112%);
+    will-change: transform, opacity;
+}
+
+#page-bar-left {
+    left: 0;
+    top: 3%;
+    height: 93%;
+}
+
+#page-bar-right {
+    left: -4%;
+    top: 4.3%;
+    height: 92%;
+}
+
+#page-side-left {
+    left: 2.12%;
+    top: 0.5%;
+    width: 5.61%;
+    height: 99%;
+}
+
+#page-side-right {
+    left: 91.65%;
+    top: 0.5%;
+    width: 5.61%;
+    height: 99%;
+}
+
+#fx-frame .video-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: transparent;
+}
+
+#fx-frame .video-container video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    opacity: 0;
+}
+
+#fx-frame .video-container video.active {
+    opacity: 1;
+}
+
+#fx-mask {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#fx-boy {
+    position: absolute;
+    left: 3.94%;
+    top: 65.13%;
+    width: 92.20%;
+    height: auto;
+    object-fit: contain;
+    z-index: 3;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#fx-vertical-bar {
+    position: absolute;
+    left: 12.39%;
+    top: 7.20%;
+    height: 86.09%;
+    width: auto;
+    max-width: none;
+    transform: translateX(-50%) translateY(-140%);
+    z-index: 4;
+    opacity: 0;
+    object-fit: contain;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+#fx-logo {
+    position: absolute;
+    left: -8.16%;
+    top: -12.60%;
+    height: 121.81%;
+    width: auto;
+    max-width: none;
+    transform: translateX(-135%);
+    z-index: 5;
+    opacity: 0;
+    object-fit: contain;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+#fx-token {
+    position: absolute;
+    left: 19.62%;
+    top: 29.28%;
+    height: 42.48%;
+    width: auto;
+    max-width: none;
+    z-index: 4;
+    opacity: 0;
+    object-fit: contain;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+#fx-text-1,
+#fx-text-2,
+#fx-text-3,
+#fx-text-4 {
+    position: absolute;
+    left: 31.81%;
+    top: 22.59%;
+    height: 51.37%;
+    width: auto;
+    max-width: none;
+    object-fit: contain;
+    z-index: 7;
+    opacity: 1;
+    clip-path: inset(0 0 100% 0);
+    pointer-events: none;
+}
+
+#fx-text-2 {
+    left: 34.61%;
+    top: 16.07%;
+    height: 64.00%;
+}
+
+#fx-text-3 {
+    left: 84.76%;
+    top: 31.52%;
+    height: 28.81%;
+}
+
+#fx-text-4 {
+    left: 87.51%;
+    top: 39.12%;
+    height: 11.54%;
+}
+
+#fx-frame-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity, transform;
+}
+
+/* ---------- 节点动效：底条 + 游戏标题 + 棕色卡片（二维码 + 继续） ----------
+   位于视频(z1)之上、边框(z10)之下，随视频一起被边框压住 */
+#node-fx {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 320ms ease;
+}
+
+#node-fx.active {
+    opacity: 1;
+}
+
+#node-fx .nf-layer {
+    position: absolute;
+    display: block;
+    pointer-events: none;
+}
+
+/* 1. 底条：从左往右划入，居中，宽度窄于视频 */
+#node-fx-bar {
+    left: 50%;
+    top: 50%;
+    /* 底条图左右各有约 5% 透明边，111.1% 时可见条正好铺满视频宽度 */
+    width: 111.1%;
+    transform: translate(-50%, -50%) translateX(-130%);
+    transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#node-fx.in #node-fx-bar {
+    transform: translate(-50%, -50%) translateX(0);
+}
+
+/* 2. 游戏标题：底条上层渐显 → 渐隐 */
+#node-fx-title {
+    left: 50%;
+    top: 50%;
+    width: 34.5%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    transition: opacity 500ms ease;
+}
+
+#node-fx.title #node-fx-title {
+    opacity: 1;
+}
+
+/* 3. 棕色卡片：二维码 + 继续（沿用网页端既有棕色面板配色）。
+   选择器用 #node-fx #node-fx-card 提高优先级，避免被上面的 .nf-layer 规则改回 block。 */
+#node-fx #node-fx-card {
+    left: 50%;
+    top: 50%;
+    /* 高度再缩短 15%（29.5vw→25vw）；内边距/间距收紧给二维码和文字让位，
+       并把字号提上去，让「标题 / 二维码 / 说明 / 继续」紧凑而均匀地铺满卡片。 */
+    width: 27.5%;
+    height: 25vw;
+    min-height: 0;
+    padding: 0.45em 1.1em 0.47em;
+    transform: translate(-50%, -50%) scale(0.94);
+    background: rgba(26, 22, 17, 0.94);
+    border: 1px solid rgba(233, 220, 192, 0.26);
+    border-radius: 8px;
+    box-shadow:
+        0 0 0 1px rgba(201, 164, 92, 0.18),
+        0 22px 60px rgba(0, 0, 0, 0.62);
+    font-size: clamp(22px, 1.8vw, 42px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    text-align: center;
+    gap: 0.2em;              /* 最小间距，剩余空间由 space-evenly 均分 */
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 420ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#node-fx.card #node-fx-card {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+#node-fx-step {
+    font-size: 1em;
+    letter-spacing: 0.18em;
+    text-indent: 0.18em;
+    line-height: 1.15;
+    color: #e6c886;
+    white-space: nowrap;
+}
+
+/* 二维码不铺满卡片：取卡片高度的一半多一点，既大又留出棕色边框 */
+#node-fx-qr-wrap {
+    flex: 0 1 auto;
+    height: 58%;
+    width: auto;
+    max-width: 100%;
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    padding: 0.45em;
+    background: #fff;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#node-fx-qr {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    image-rendering: pixelated;
+}
+
+#node-fx-qr-tip {
+    font-size: 0.9em;
+    letter-spacing: 0.12em;
+    text-indent: 0.12em;
+    color: rgba(242, 234, 217, 0.68);
+    text-align: center;
+    line-height: 1.25;
+}
+
+#node-fx-card .continue-btn {
+    min-width: 0;
+    width: 100%;
+    padding: 0.5em 0;
+    font-size: 1.02em;
+    letter-spacing: 0.22em;
+    text-indent: 0.22em;
+    pointer-events: auto;
+}
+
+/* 前置环节没完成：二维码先不解锁，但仍可点“继续”往后看剧情 */
+#node-fx-card.locked #node-fx-qr-wrap {
+    filter: grayscale(0.6) brightness(0.88);
+}
+
+#node-fx-card.locked #node-fx-qr-tip {
+    color: #c9a45c;
+}
+
+#node-fx-card.done #node-fx-qr-tip {
+    color: #e6c886;
+}
+
+/* 新二维码节点：书页动效 → 二维码条 + 提示条 → 翻页角标 */
+#node-fx-book,
+#node-fx-book-anim {
+    left: 50%;
+    top: 49%;
+    width: 76%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    background: transparent;
+    transform: translate(-50%, -50%) scale(0.985);
+    opacity: 0;
+    z-index: 2;
+    transition: opacity 420ms ease, transform 520ms ease;
+    pointer-events: none;
+}
+
+#node-fx.book #node-fx-book {
+    opacity: 1 !important;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+#node-fx-book-anim {
+    opacity: 0;
+    transition: opacity 80ms linear;
+}
+
+#node-fx.book #node-fx-book-anim {
+    opacity: 1;
+}
+
+#node-fx #node-fx-card {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    display: block;
+    z-index: 6;
+    opacity: 0;
+    transform: scale(0.96);
+    pointer-events: none;
+    transition: opacity 620ms ease, transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#node-fx.assets #node-fx-card {
+    opacity: 1;
+    transform: scale(1);
+}
+
+#node-fx-qr-art {
+    position: absolute;
+    display: block;
+    height: auto;
+    aspect-ratio: 4804 / 362;
+    transform: translate(-50%, -50%);
+    overflow: visible;
+}
+
+#node-fx-tip-art {
+    position: absolute;
+    display: block;
+    height: auto;
+    object-fit: contain;
+    transform: translate(-50%, -50%);
+}
+
+#node-fx-qr-art {
+    left: 50%;
+    top: 44%;
+    width: 68%;
+}
+
+#node-fx-qr-art .node-qr-decoration {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    pointer-events: none;
+}
+
+#node-fx-qr-code {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 24%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    display: block;
+    background: #fff;
+    object-fit: contain;
+    pointer-events: none;
+    image-rendering: auto;
+}
+
+#node-fx-tip-art {
+    left: 50%;
+    top: 55%;
+    width: 62%;
+}
+
+#node-fx-flip {
+    position: absolute;
+    left: 93.5%;
+    top: 91.5%;
+    z-index: 90;
+    width: 11.2%;
+    aspect-ratio: 1.45 / 1;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    transition: opacity 520ms ease, transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    cursor: pointer;
+}
+
+#node-fx-flip img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 180ms ease;
+}
+
+#node-fx-flip-active {
+    opacity: 0;
+}
+
+#node-fx-flip.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%);
+}
+
+#node-fx-flip:hover #node-fx-flip-idle,
+#node-fx-flip:focus-visible #node-fx-flip-idle {
+    opacity: 0;
+}
+
+#node-fx-flip:hover #node-fx-flip-active,
+#node-fx-flip:focus-visible #node-fx-flip-active {
+    opacity: 1;
+}
+
+#node-fx-flip.is-ready #node-fx-flip-active {
+    opacity: 1;
+    animation: flipReminder 3s ease-in-out infinite;
+}
+
+#node-fx-flip.is-ready #node-fx-flip-idle {
+    opacity: 0;
+}
+
+#node-fx-flip.is-ready:hover #node-fx-flip-active,
+#node-fx-flip.is-ready:focus-visible #node-fx-flip-active {
+    opacity: 1;
+    animation: none;
+}
+
+@keyframes flipReminder {
+    0%, 76%, 100% { opacity: 1; }
+    82%, 90% { opacity: 0.28; }
+}
+
+#node-fx.exiting #node-fx-card {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+#node-fx.exiting #node-fx-book,
+#node-fx.exiting #node-fx-book-anim,
+#node-fx.exiting #node-fx-flip {
+    opacity: 0 !important;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.96);
+}
+
+#node-fx-flip.is-exiting {
+    opacity: 0 !important;
+    pointer-events: none;
+    transform: translate(-50%, calc(-50% + 22px));
+}
+
+#node-fx.exiting #node-fx-bar {
+    transform: translate(-50%, -50%) translateX(-135%);
+}
+
+#fx-frame-logo {
+    position: absolute;
+    left: 5.0035vw;
+    top: calc(7.78vh + 32.72vw);
+    height: 9.273vw;
+    width: auto;
+    object-fit: contain;
+    z-index: 75;
+    opacity: 1;
+    pointer-events: none;
+}
+
+#fx-caption-zone {
+    position: absolute;
+    inset: 0;
+    display: block;
+    z-index: 70;
+}
+
+#fx-caption-zone img {
+    position: absolute;
+    object-fit: contain;
+    pointer-events: none;
+    opacity: 0;
+}
+
+#fx-monologue-1 {
+    left: 10.50%;
+    top: 83.64%;
+    width: 41.33%;
+}
+
+#fx-monologue-2 {
+    left: 51.43%;
+    top: 83.36%;
+    width: 43.96%;
+}
+
+#fx-process {
+    position: absolute;
+    left: 16.60%;
+    top: 76.66%;
+    width: 63.60%;
+    aspect-ratio: 5096 / 841;
+    overflow: hidden;
+    opacity: 1;
+    pointer-events: none;
+    --process-reveal: 0%;
+    --process-progress: 0%;
+}
+
+#process-reveal {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(0 calc(100% - var(--process-progress)) 0 0);
+    pointer-events: none;
+}
+
+#fx-process .process-layer {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    opacity: 1;
+    pointer-events: none;
+}
+
+#fx-process .process-base {
+    opacity: 0.38;
+    filter: brightness(0.58) saturate(0.55) contrast(1.06);
+}
+
+#fx-process .process-progress-bar {
+    filter: brightness(1.5) saturate(1.25) contrast(1.04)
+        drop-shadow(0 0 6px rgba(241, 203, 118, 0.42));
+    opacity: 0.96;
+}
+
+#fx-process .process-glow {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity, transform;
+}
+
+/* 流程条各节点统一使用独立的偏深版本图标，不再从浅色长条上裁切。 */
+#fx-process .process-glow.process-logo-icon {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    width: 9.03%;
+    transform: translateY(-50%) scale(0.55);
+    clip-path: none;
+    opacity: 0;
+    transform-origin: 50% 50%;
+}
+
+#fx-process .process-glow.process-logo-icon.pl-0 { left: 4.3%; aspect-ratio: 1349 / 1251; }
+#fx-process .process-glow.process-logo-icon.pl-1 { left: 21.08%; aspect-ratio: 1023 / 1250; }
+#fx-process .process-glow.process-logo-icon.pl-2 { left: 37.77%; aspect-ratio: 1157 / 1250; }
+#fx-process .process-glow.process-logo-icon.pl-3 { left: 53.92%; aspect-ratio: 1256 / 1252; }
+#fx-process .process-glow.process-logo-icon.pl-4 { left: 72.25%; aspect-ratio: 1070 / 1251; }
+#fx-process .process-glow.process-logo-icon.pl-5 { left: 86.99%; aspect-ratio: 1069 / 1249; }
+
+#fx-process .process-glow.process-logo-icon img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    opacity: 1;
+    filter: none;
+    z-index: 2;
+}
+
+#fx-process .process-short-line {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    z-index: 2;
+    width: 7%;
+    height: auto;
+    aspect-ratio: 4410 / 135;
+    transform: translateY(-50%);
+    transform-origin: 0 50%;
+    background: url("/image/流程条/短线条.png") center / 100% 100% no-repeat;
+    filter: brightness(1.7) sepia(0.18) drop-shadow(0 0 4px rgba(241, 203, 118, 0.62));
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+    pointer-events: none;
+    will-change: clip-path, opacity;
+}
+
+#fx-process .process-logo-icon.is-visible {
+    opacity: 1;
+    animation: processIconPop 0.62s cubic-bezier(0.17, 0.89, 0.32, 1.25) both;
+}
+
+@keyframes processIconPop {
+    0% {
+        opacity: 1;
+        transform: translateY(-50%) scale(0.55);
+    }
+    58% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1.16);
+    }
+    78% {
+        opacity: 1;
+        transform: translateY(-50%) scale(0.94);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(-50%) scale(1);
+    }
+}
+
+#fx-process .process-glow img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    opacity: 1;
+    filter: brightness(1.85) saturate(1.5) contrast(1.08)
+        drop-shadow(0 0 5px rgba(241, 203, 118, 0.75));
+}
+
+#fx-caption-zone img.hidden-fx {
+    display: none;
+}
+
+/* 节点/结束浮层保持在书页版式之上 */
+.node-overlay,
+.end-overlay {
+    z-index: 80;
+}
+
+.loading-overlay {
+    z-index: 100;
+}
+
+@media (max-width: 760px) {
+    #fx-frame {
+        left: 3.26%;
+        width: 92.74%;
+    }
+}

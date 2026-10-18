@@ -1,0 +1,1943 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="theme-color" content="#12100c">
+    <link rel="icon" href="data:,">
+    <title>焗瓷记 · 名瓷鉴定</title>
+    <style>
+        :root {
+            --ink: #12100c;
+            --panel: rgba(26, 22, 17, 0.9);
+            --parchment: #e9dcc0;
+            --gold: #c9a45c;
+            --gold-bright: #e6c886;
+            --cinnabar: #b04a2f;
+            --text: #f2ead9;
+            --muted: rgba(242, 234, 217, 0.66);
+            --line: rgba(233, 220, 192, 0.24);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+            background: #000;
+            color: var(--text);
+            font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        button {
+            font-family: inherit;
+            font-size: inherit;
+            touch-action: manipulation;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 统一“固定比例舞台”：1em = 舞台宽度的 1%。
+           电脑与平板无论什么分辨率，组件都按舞台百分比定位，所见完全一致。 */
+        .stage {
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            overflow: hidden;
+            background: #000;
+        }
+
+        /* 开场（Frame 153.jpg 为 6710x3774，16:9） */
+        .intro-stage {
+            width: min(100vw, calc(100vh * 1.7784));
+            aspect-ratio: 6710 / 3774;
+            font-size: calc(min(100vw, 100vh * 1.7784) / 100);
+            animation: fadeIn 0.9s ease;
+        }
+
+        /* 置顶框架 Frame 153.webp（中间透明，覆盖在视频上方） */
+        .intro-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+            z-index: 3;
+            pointer-events: none;
+            transform-origin: center;
+            animation: introFrameGrow 2s ease-out forwards;
+        }
+
+        /* 外边框从小到大生长（与找碴对缝开场节奏一致） */
+        @keyframes introFrameGrow {
+            from { transform: scale(0.98); }
+            to { transform: scale(1); }
+        }
+
+        /* 中间循环播放开场背景视频 /image/背景.mp4 */
+        .intro-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            z-index: 1;
+        }
+
+        /* 右侧四个游戏组件：当前组件稍大并缓慢右滑进入、可点击；其余不可跳转 */
+        .intro-components {
+            position: absolute;
+            right: 6%;
+            top: 8%;
+            width: 29%;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            gap: -4em;
+            align-items: flex-end;
+        }
+
+        .intro-component {
+            width: 86%;
+            transform: translateX(0);
+            filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.4));
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .intro-component.active {
+            width: 100%;
+            filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.4))
+                    drop-shadow(0 0 18px rgba(230, 200, 134, 0.85))
+                    drop-shadow(0 0 6px rgba(255, 220, 140, 0.6));
+            transform: translateX(120%);
+            opacity: 0;
+            animation: compSlideIn 1.6s cubic-bezier(0.2, 0.8, 0.25, 1) 0.5s forwards;
+        }
+
+        .intro-comp-btn {
+            width: 100%;
+            padding: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: block;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .intro-comp-btn img {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+        }
+
+        /* 鼠标悬停：组件稍放大，并在四周显示光圈 */
+        .intro-comp-btn:hover,
+        .intro-comp-btn:focus-visible {
+            outline: none;
+            transform: scale(1.08);
+            filter: drop-shadow(0 0 10px rgba(230, 200, 134, 0.55))
+                    drop-shadow(0 0 3px rgba(255, 220, 140, 0.35));
+        }
+
+        .intro-comp-btn:active {
+            transform: scale(0.97);
+        }
+
+        @keyframes compSlideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* 游戏舞台（Frame 41 为 6710x3774，16:9） */
+        .game-stage {
+            width: min(100vw, calc(100vh * 1.7784));
+            aspect-ratio: 6710 / 3774;
+            font-size: calc(min(100vw, 100vh * 1.7784) / 100);
+        }
+
+        .game-stage .bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+        }
+
+        /* 顶部标题栏（叠加在场景上，位置随舞台缩放） */
+        .g-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 8;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 1.4em 2.4em 2.2em;
+            background: linear-gradient(to bottom, rgba(10, 8, 6, 0.72), transparent);
+            pointer-events: none;
+        }
+
+        .g-header .g-titles {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25em;
+        }
+
+        .g-header .g-step {
+            font-size: 0.92em;
+            letter-spacing: 0.32em;
+            text-indent: 0.32em;
+            color: var(--gold);
+            text-shadow: 0 1px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        .g-header .g-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            letter-spacing: 0.16em;
+            color: var(--text);
+            text-shadow: 0 1px 10px rgba(0, 0, 0, 0.8);
+        }
+
+        .g-header .g-back {
+            pointer-events: auto;
+            font-size: 0.92em;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            text-decoration: none;
+            border: 1px solid rgba(233, 220, 192, 0.28);
+            border-radius: 999px;
+            padding: 0.6em 1.2em;
+            background: rgba(18, 16, 12, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .g-header .g-back:hover,
+        .g-header .g-back:focus-visible {
+            background: var(--gold);
+            color: var(--ink);
+            outline: none;
+        }
+
+        /* 顶部中央：鉴定进度（5 个小圆，空心 → 实心，金色） */
+        .identify-progress {
+            position: absolute;
+            left: 50%;
+            top: 2.4em;
+            transform: translateX(-50%);
+            z-index: 9;
+            display: flex;
+            align-items: center;
+            gap: 1.15em;
+            padding: 0.5em 1.15em;
+            border-radius: 999px;
+            background: rgba(18, 16, 12, 0.32);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            pointer-events: none;
+        }
+
+        .identify-progress .idp-dot {
+            width: 0.95em;
+            height: 0.95em;
+            border-radius: 50%;
+            border: 2px solid rgba(230, 200, 134, 0.7);
+            background: transparent;
+            box-shadow: 0 0 0 0 rgba(230, 200, 134, 0);
+            transition: background 0.45s ease, border-color 0.45s ease,
+                        box-shadow 0.45s ease, transform 0.45s ease;
+        }
+
+        .identify-progress .idp-dot.done {
+            background: radial-gradient(circle at 35% 32%, #ffeec2 0%, #e6c886 48%, #c9a45c 100%);
+            border-color: #f2dca6;
+            box-shadow: 0 0 0.9em rgba(230, 200, 134, 0.78);
+            transform: scale(1.06);
+        }
+
+        /* 热点 */
+        .hotspots {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+        }
+
+        .hotspot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 6.1em;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 1.5px solid rgba(230, 200, 134, 0.7);
+            background: radial-gradient(circle, rgba(230, 200, 134, 0.2) 0%, rgba(230, 200, 134, 0.05) 55%, transparent 72%);
+            cursor: pointer;
+            animation: hotspotPulse 2.4s ease-in-out infinite;
+            transition: transform 0.2s ease, background 0.2s ease;
+        }
+
+        .hotspot:hover,
+        .hotspot:focus-visible {
+            outline: none;
+            transform: translate(-50%, -50%) scale(1.12);
+            border-color: var(--gold-bright);
+        }
+
+        .hotspot:active {
+            transform: translate(-50%, -50%) scale(1.18);
+            border-color: var(--gold-bright);
+            background: radial-gradient(circle, rgba(230, 200, 134, 0.34) 0%, rgba(230, 200, 134, 0.1) 60%, transparent 76%);
+        }
+
+        /* 底部提示与继续按钮（叠加在场景上） */
+        .g-hint {
+            position: absolute;
+            left: 50%;
+            bottom: 1.1em;
+            transform: translateX(-50%);
+            z-index: 6;
+            font-size: 1.05em;
+            letter-spacing: 0.28em;
+            text-indent: 0.28em;
+            color: var(--muted);
+            text-shadow: 0 1px 10px rgba(0, 0, 0, 0.75);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .g-continue {
+            position: absolute;
+            right: 2em;
+            bottom: 1.4em;
+            z-index: 6;
+            min-width: 11.7em;
+            padding: 0.85em 1.8em;
+            background: rgba(18, 16, 12, 0.58);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            color: var(--gold-bright);
+            font-size: 1.2em;
+            letter-spacing: 0.28em;
+            text-indent: 0.28em;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .g-continue:hover,
+        .g-continue:focus-visible {
+            background: var(--gold);
+            color: var(--ink);
+            outline: none;
+            box-shadow: 0 0 22px rgba(201, 164, 92, 0.4);
+        }
+
+        .g-continue:active {
+            transform: scale(0.97);
+        }
+
+        /* 置顶外边框 Frame 153.webp（中间透明，静置于场景上方，参考目录页） */
+        .game-frame {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* 隐藏热键：透明、无边框、无光圈，仅保留可点击区域 */
+        .hotspot.ghost {
+            width: 13em;
+            background: none;
+            border: none;
+            border-radius: 0;
+            animation: none;
+            transition: none;
+        }
+
+        .hotspot.ghost:hover,
+        .hotspot.ghost:focus-visible,
+        .hotspot.ghost:active {
+            background: none;
+            border: none;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 当前待点击瓷器的闪光提示（pointer-events 关闭，点击命中下方透明热键） */
+        .identify-flash {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 18em;
+            aspect-ratio: 1;
+            z-index: 5;
+            pointer-events: none;
+            display: none;
+            filter: drop-shadow(0 0 16px rgba(255, 222, 156, 0.45));
+        }
+
+        .identify-flash.show {
+            display: block;
+            /* 只闪两下（亮→暗→亮），随后保持稳定的可点击状态，不再持续呼吸 */
+            animation: flashBlink 2.4s ease-in-out 1 forwards;
+        }
+
+        .identify-flash img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        @keyframes flashBlink {
+            0%   { opacity: 0.12; transform: translate(-50%, -50%) scale(0.95); }
+            20%  { opacity: 1;    transform: translate(-50%, -50%) scale(1.02); }
+            45%  { opacity: 0.18; transform: translate(-50%, -50%) scale(0.96); }
+            70%  { opacity: 1;    transform: translate(-50%, -50%) scale(1.02); }
+            100% { opacity: 0.88; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 点击后：在瓷器原位置上渐显对应的 *ui.png 详情图 */
+        .identify-reveal {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            width: 24em;
+            aspect-ratio: 1;
+            z-index: 45;   /* 高于 .popup(40)：点击后遮罩立现，ui.png 浮在遮罩之上 */
+            pointer-events: none;
+            display: none;
+            filter: drop-shadow(0 20px 44px rgba(0, 0, 0, 0.6));
+        }
+
+        .identify-reveal.show {
+            display: block;
+            animation: revealIn 1s ease forwards;
+        }
+
+        .identify-reveal img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        @keyframes revealIn {
+            from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
+            to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 底部“轻触瓷器”提示：满宽贴底，缓慢淡入，停顿后淡出（与找碴对缝文字图一致） */
+        .identify-tip {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100vw;
+            z-index: 6;
+            pointer-events: none;
+            opacity: 0;
+            animation: tipIn 1.5s ease forwards;
+        }
+
+        .identify-tip img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .identify-tip.out {
+            animation: tipOut 0.7s ease forwards;
+        }
+
+        @keyframes tipIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes tipOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* 右侧“识瓷介绍”提示圈 */
+        .identify-circle {
+            position: fixed;
+            right: 20%;
+            top: 46%;
+            transform: translateY(-50%);
+            width: clamp(90px, 11vw, 200px);
+            padding: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 7;
+            animation: circleIn 1s ease-out 0.2s backwards, circlePulse 2.6s ease-in-out 1.2s infinite;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .identify-circle img {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+            filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.5));
+        }
+
+        .identify-circle:hover {
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .identify-circle:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        @keyframes circleIn {
+            from { opacity: 0; transform: translateY(-50%) scale(0.7); }
+            to { opacity: 1; transform: translateY(-50%) scale(1); }
+        }
+
+        @keyframes circlePulse {
+            0%, 100% { opacity: 0.4; transform: translateY(-50%) scale(0.97); }
+            50% { opacity: 1; transform: translateY(-50%) scale(1); }
+        }
+
+        /* 详情弹窗里的 PNG 渐显阶段 */
+        .popup-media.png-fade {
+            display: block;
+            animation: pngFadeIn 1.1s ease forwards;
+        }
+
+        @keyframes pngFadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 详情弹窗：去掉外边框、右上角“叉”和下方名称，webp 直接显示在一层压暗遮罩上 */
+        .popup {
+            position: absolute;
+            inset: 0;
+            z-index: 40;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.1em;
+            background: rgba(6, 4, 3, 0.68);
+            animation: fadeIn 0.25s ease;
+        }
+
+        .popup-media {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 94em;
+            max-height: 60em;
+            animation: popIn 0.42s cubic-bezier(0.2, 0.8, 0.25, 1);
+        }
+
+        /* 已查看的瓷器热点：消失 */
+        .hotspot.viewed {
+            display: none;
+        }
+
+        /* 位置校准：在每个瓷器/提示圈处画出十字与坐标标签 */
+        .calib-marker {
+            position: absolute;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        .calib-marker::before,
+        .calib-marker::after {
+            content: "";
+            position: absolute;
+            background: rgba(230, 200, 134, 0.92);
+        }
+
+        .calib-marker::before {
+            left: -16px;
+            top: -1px;
+            width: 32px;
+            height: 2px;
+        }
+
+        .calib-marker::after {
+            left: -1px;
+            top: -16px;
+            width: 2px;
+            height: 32px;
+        }
+
+        .calib-marker span {
+            position: absolute;
+            top: 7px;
+            left: 18px;
+            white-space: nowrap;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(18, 16, 12, 0.92);
+            color: #ffe6a8;
+            font-size: 0.62rem;
+            letter-spacing: 0.04em;
+            pointer-events: none;
+        }
+
+        /* 结算页（修复等级认证）：4299x1978，约 2.174:1 */
+        .settle-stage {
+            width: min(100vw, calc(100vh * 2.1739));
+            aspect-ratio: 4300 / 1978;
+            font-size: calc(min(100vw, 100vh * 2.1739) / 100);
+            animation: settleStageIn 1.1s ease forwards;
+            background: #000;
+        }
+
+        .settle-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            display: block;
+        }
+
+        /* 图像1：从左侧滑入 */
+        .settle-scene {
+            position: absolute;
+            left: 3.6%;
+            top: 12.2%;
+            width: 46.6%;
+            z-index: 3;
+            filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.35));
+            opacity: 0;
+            transform: translateX(-45%);
+            animation: settleSlideLeft 2.6s cubic-bezier(0.2, 0.8, 0.25, 1) 0.7s forwards;
+            pointer-events: none;
+        }
+
+        /* 入门：弹动出现 */
+        .settle-grade {
+            position: absolute;
+            left: 52.4%;
+            top: 10%;
+            width: 39.8%;
+            z-index: 4;
+            opacity: 0;
+            transform: scale(0.3) translateY(18px);
+            animation: settlePop 2.2s cubic-bezier(0.34, 1.45, 0.64, 1) 1.9s forwards;
+            pointer-events: none;
+        }
+
+        .settle-grade img {
+            width: 100%;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 0 26px rgba(255, 222, 156, 0.45));
+        }
+
+        /* 返回：从右侧滑入 */
+        .settle-back {
+            position: absolute;
+            left: 52.2%;
+            top: 74.7%;
+            width: 41.4%;
+            z-index: 4;
+            padding: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateX(45%);
+            animation: settleSlideRight 2.4s cubic-bezier(0.2, 0.8, 0.25, 1) 2.7s forwards;
+        }
+
+        .settle-back img {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.35));
+        }
+
+        .settle-back:hover img {
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.45)) brightness(1.05);
+        }
+
+        /* 小标1 + 分数：渐显 */
+        .settle-labels {
+            position: absolute;
+            left: 52.2%;
+            top: 62.5%;
+            width: 18%;
+            z-index: 4;
+            opacity: 0;
+            animation: settleFadeIn 2s ease 3.4s forwards;
+            pointer-events: none;
+        }
+
+        .settle-labels-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .settle-score {
+            position: absolute;
+            top: 50%;
+            left: 87.5%;
+            transform: translate(-50%, -50%);
+            color: #f0a744;
+            font-size: 2.1em;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65), 0 0 16px rgba(240, 167, 68, 0.35);
+            line-height: 1;
+            white-space: nowrap;
+            opacity: 0;
+            animation: settleFadeIn 1.8s ease 3.6s forwards;
+            font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+        }
+
+        @keyframes settleStageIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes settleFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes settleSlideRight {
+            from { opacity: 0; transform: translateX(45%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes settleSlideLeft {
+            from { opacity: 0; transform: translateX(-45%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes settlePop {
+            0% { opacity: 0; transform: scale(0.3) translateY(18px); }
+            45% { opacity: 1; transform: scale(1.12) translateY(-6px); }
+            70% { transform: scale(0.95) translateY(3px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* 轻提示 */
+        .toast {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            padding: 1.3em 2.2em;
+            border-radius: 6px;
+            background: rgba(18, 16, 12, 0.92);
+            border: 1px solid var(--gold);
+            color: var(--gold-bright);
+            font-size: 1.05em;
+            letter-spacing: 0.2em;
+            text-indent: 0.2em;
+            text-align: center;
+            pointer-events: none;
+            animation: popIn 0.35s cubic-bezier(0.2, 0.8, 0.25, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes zoomIn {
+            from { transform: scale(1.08); }
+            to { transform: scale(1); }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.88) translateY(18px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes hotspotPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(201, 164, 92, 0.42), inset 0 0 14px rgba(201, 164, 92, 0.08);
+            }
+            50% {
+                box-shadow: 0 0 0 18px rgba(201, 164, 92, 0), inset 0 0 22px rgba(201, 164, 92, 0.2);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ---- 开发辅助：位置校准 + 实时刷新 ---- */
+        .calib-btn {
+            position: fixed;
+            right: 14px;
+            bottom: 14px;
+            z-index: 96;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: rgba(18, 16, 12, 0.82);
+            border: 1px solid var(--gold);
+            color: var(--gold-bright);
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            text-indent: 0.16em;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* 校准位置清单：列出各瓷器与识瓷介绍坐标，方便直接照抄 */
+        .calib-panel {
+            position: fixed;
+            left: 14px;
+            top: 14px;
+            z-index: 97;
+            width: min(320px, 48vw);
+            padding: 10px 12px 12px;
+            border-radius: 8px;
+            background: rgba(18, 16, 12, 0.9);
+            border: 1px solid rgba(201, 164, 92, 0.5);
+            color: #f2ead9;
+            font-size: 0.72rem;
+            letter-spacing: 0.03em;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            pointer-events: auto;
+        }
+
+        .calib-panel h4 {
+            margin: 0 0 6px;
+            font-size: 0.78rem;
+            color: var(--gold-bright);
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        .calib-panel .cp-row {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(233, 220, 192, 0.08);
+        }
+
+        .calib-panel .cp-row:last-child {
+            border-bottom: none;
+        }
+
+        .calib-panel .cp-idx {
+            flex: 0 0 16px;
+            color: #ffe6a8;
+        }
+
+        .calib-panel .cp-name {
+            flex: 1 1 auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .calib-panel .cp-xy {
+            flex: 0 0 auto;
+            font-variant-numeric: tabular-nums;
+            color: var(--gold-bright);
+        }
+
+        .calib-panel .cp-hint {
+            margin-top: 6px;
+            color: var(--muted);
+            letter-spacing: 0.05em;
+        }
+
+        .calib-btn.active {
+            background: var(--gold);
+            color: var(--ink);
+            box-shadow: 0 0 18px rgba(201, 164, 92, 0.5);
+        }
+
+        .live-pill {
+            position: fixed;
+            left: 14px;
+            bottom: 14px;
+            z-index: 96;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 13px;
+            border-radius: 999px;
+            background: rgba(18, 16, 12, 0.82);
+            border: 1px solid rgba(201, 164, 92, 0.4);
+            color: var(--muted);
+            font-size: 0.72rem;
+            letter-spacing: 0.08em;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .live-pill .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #57d17c;
+            box-shadow: 0 0 8px #57d17c;
+        }
+
+        .live-pill.warn .dot {
+            background: #e0a34a;
+            box-shadow: 0 0 8px #e0a34a;
+        }
+
+        .live-pill .hotspot .hotspot-cord {
+            display: none;
+        }
+
+        .game-stage.calib .hotspot {
+            outline: 2px dashed rgba(230, 200, 134, 0.95);
+            background: radial-gradient(circle, rgba(230, 200, 134, 0.28) 0%, rgba(230, 200, 134, 0.06) 60%, transparent 76%);
+        }
+
+        .game-stage.calib .hotspot::after {
+            content: attr(data-label);
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 2px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(18, 16, 12, 0.92);
+            color: #ffe6a8;
+            font-size: 0.62rem;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* 透明热键不参与校准描边（校准改为显示 calib-marker 坐标标签） */
+        .game-stage.calib .hotspot.ghost {
+            outline: none;
+            background: none;
+        }
+
+        .game-stage.calib .hotspot.ghost::after {
+            content: none;
+        }
+
+        .calib-cross {
+            position: absolute;
+            width: 0;
+            height: 0;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        .calib-cross::before,
+        .calib-cross::after {
+            content: "";
+            position: absolute;
+            background: rgba(230, 200, 134, 0.92);
+        }
+
+        .calib-cross::before {
+            left: -16px;
+            top: -1px;
+            width: 32px;
+            height: 2px;
+        }
+
+        .calib-cross::after {
+            left: -1px;
+            top: -16px;
+            width: 2px;
+            height: 32px;
+        }
+
+        /* ---- 校准：可拖动 / 可调整大小的瓷器框 ---- */
+        .game-stage.calib .calib-item {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            pointer-events: auto;
+            cursor: grab;
+            z-index: 70;
+            border: 1.5px dashed rgba(230, 200, 134, 0.95);
+            border-radius: 4px;
+            background: radial-gradient(circle, rgba(230, 200, 134, 0.12) 0%, transparent 70%);
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+        }
+
+        .game-stage.calib .calib-item:active {
+            cursor: grabbing;
+        }
+
+        .game-stage.calib .calib-item .calib-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+            filter: drop-shadow(0 0 6px rgba(255, 222, 156, 0.35));
+        }
+
+        /* 热键命中区：比图片更小的内层虚线框（同一坐标、不同大小） */
+        .game-stage.calib .calib-item .calib-hitbox {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(120, 200, 255, 0.9);
+            border-radius: 50%;
+            pointer-events: none;
+            background: radial-gradient(circle, rgba(120, 200, 255, 0.12) 0%, transparent 70%);
+        }
+
+        .game-stage.calib .calib-item .calib-center {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 0;
+            height: 0;
+        }
+
+        .game-stage.calib .calib-item .calib-center::before,
+        .game-stage.calib .calib-item .calib-center::after {
+            content: "";
+            position: absolute;
+            background: rgba(255, 230, 170, 0.95);
+        }
+
+        .game-stage.calib .calib-item .calib-center::before {
+            left: -14px;
+            top: -1px;
+            width: 28px;
+            height: 2px;
+        }
+
+        .game-stage.calib .calib-item .calib-center::after {
+            left: -1px;
+            top: -14px;
+            width: 2px;
+            height: 28px;
+        }
+
+        .game-stage.calib .calib-item .calib-label {
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            transform: translateX(-50%);
+            margin-top: 3px;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(18, 16, 12, 0.92);
+            color: #ffe6a8;
+            font-size: 0.62rem;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .game-stage.calib .calib-item .calib-resize {
+            position: absolute;
+            right: -9px;
+            bottom: -9px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #e6c886;
+            border: 2px solid #4a3a22;
+            cursor: nwse-resize;
+            pointer-events: auto;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .calib-panel .cp-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .calib-panel .cp-actions button {
+            flex: 1;
+            padding: 5px 8px;
+            border-radius: 4px;
+            background: rgba(230, 200, 134, 0.14);
+            border: 1px solid rgba(201, 164, 92, 0.5);
+            color: var(--gold-bright);
+            font-size: 0.7rem;
+            letter-spacing: 0.06em;
+            cursor: pointer;
+        }
+
+        .calib-panel .cp-actions button:hover {
+            background: var(--gold);
+            color: var(--ink);
+        }
+
+        .calib-panel textarea {
+            display: block;
+            width: 100%;
+            margin-top: 8px;
+            min-height: 96px;
+            resize: vertical;
+            padding: 6px 8px;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(201, 164, 92, 0.35);
+            color: #f2ead9;
+            font-size: 0.66rem;
+            pointer-events: auto;
+        }
+
+        /* 右下角「退出」：随时结束本局，按已完成阶段直接进入结算 */
+        .exit-btn {
+            position: absolute;
+            right: 3.2em;
+            bottom: 2.6em;
+            z-index: 12;
+            padding: 0.75em 1.6em;
+            font-size: 1.45em;
+            letter-spacing: 0.22em;
+            text-indent: 0.22em;
+            color: var(--gold-bright);
+            background: rgba(18, 16, 12, 0.62);
+            border: 1px solid rgba(201, 164, 92, 0.62);
+            border-radius: 999px;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+
+        .exit-btn:hover,
+        .exit-btn:focus-visible {
+            background: var(--gold);
+            color: var(--ink);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .exit-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+    </style>
+    <link rel="stylesheet" href="game-end.css">
+    <script src="editors/game-end-layout.js"></script>
+</head>
+<body>
+    <!-- 开场 -->
+    <div class="stage intro-stage" id="intro">
+        <img class="intro-bg" src="/image/游戏/images/Frame 153.webp" alt="名瓷鉴定开场">
+        <video id="intro-video" class="intro-video" src="/image/背景.mp4" poster="/image/背景.webp"
+               muted playsinline webkit-playsinline x5-playsinline autoplay loop preload="auto"></video>
+        <div class="intro-components">
+            <div class="intro-component active c1">
+                <button class="intro-comp-btn" type="button" aria-label="名瓷鉴定">
+                    <img src="/image/游戏/images/名瓷鉴定组件.webp" alt="名瓷鉴定">
+                </button>
+            </div>
+            <div class="intro-component c2">
+                <button class="intro-comp-btn" type="button" aria-label="找碴对缝">
+                    <img src="/image/游戏/images/找碴对缝组件(小).webp" alt="找碴对缝">
+                </button>
+            </div>
+            <div class="intro-component c3">
+                <button class="intro-comp-btn" type="button" aria-label="绑扎定型">
+                    <img src="/image/游戏/images/绑扎定型组件.webp" alt="绑扎定型">
+                </button>
+            </div>
+            <div class="intro-component c4">
+                <button class="intro-comp-btn" type="button" aria-label="打孔上钉">
+                    <img src="/image/游戏/images/打孔上钉组件.webp" alt="打孔上钉">
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏 -->
+    <div class="stage game-stage hidden" id="game">
+        <img class="bg" src="/image/游戏/images/鉴定背景图.webp" alt="博古架">
+        <img class="game-frame" src="/image/游戏/images/Frame 153.webp" alt="">
+
+        <!-- 顶部中央：鉴定进度（空心 → 实心） -->
+        <div class="identify-progress hidden" id="identify-progress" aria-hidden="true">
+            <span class="idp-dot"></span>
+            <span class="idp-dot"></span>
+            <span class="idp-dot"></span>
+            <span class="idp-dot"></span>
+            <span class="idp-dot"></span>
+        </div>
+
+        <div class="hotspots" id="hotspots"></div>
+        <div class="identify-flash" id="flash"><img id="flash-img" alt="待点击瓷器"></div>
+        <div class="identify-reveal" id="reveal"><img id="reveal-img" alt="瓷器详情"></div>
+
+        <div class="popup hidden" id="popup">
+            <canvas id="popup-canvas" class="popup-media"></canvas>
+            <img id="popup-img" class="popup-media hidden" alt="瓷器详情">
+        </div>
+
+        <div class="toast hidden" id="toast"></div>
+
+        <!-- 右下角「退出」：随时按已完成阶段结算 -->
+        <button class="exit-btn hidden" id="exit-btn" type="button" aria-label="结束游戏并结算">
+            <img src="/image/结束游戏键.png" alt="结束游戏">
+        </button>
+
+        <!-- 开发辅助：位置校准 + 实时刷新 -->
+        <button class="calib-btn hidden" id="calib-btn" type="button" aria-pressed="false">位置校准</button>
+        <div class="calib-panel hidden" id="calib-panel"></div>
+        <div class="live-pill hidden" id="live-pill"><span class="dot"></span><span id="live-text">实时刷新</span></div>
+    </div>
+
+    <!-- 名瓷鉴定引导：底部“轻触瓷器”提示 + 右侧“识瓷介绍”提示圈 -->
+    <div class="identify-tip hidden" id="tip">
+        <img src="/image/游戏/images/轻触瓷器.png" alt="轻触瓷器">
+    </div>
+    <button class="identify-circle hidden" id="circle" type="button" aria-label="识瓷介绍">
+        <img src="/image/游戏/images/识瓷介绍.webp" alt="识瓷介绍">
+    </button>
+
+    <!-- 结算 -->
+    <div class="stage settle-stage hidden" id="settlement">
+        <img class="settle-bg" src="/image/游戏/images/结算/结算背景1.webp" alt="修复等级认证结算">
+        <div class="settle-labels" id="settle-labels">
+            <img class="settle-labels-img" src="/image/游戏/images/结算/小标1.png" alt="瓷器鉴定">
+            <span class="settle-score" id="settle-score">—</span>
+        </div>
+        <button id="settle-back" class="settle-back" type="button" aria-label="返回网页">
+            <img src="/image/游戏/images/结算/返回.webp" alt="返回网页 继续探索吧">
+        </button>
+        <div class="settle-grade" id="settle-grade">
+            <img src="/image/游戏/images/结算/入门.webp" alt="入门">
+        </div>
+        <img class="settle-scene" src="/image/游戏/images/结算/图像1.webp" alt="学徒与修复作坊">
+    </div>
+
+    <script src="intro-audio.js"></script>
+    <script src="game-bgm.js"></script>
+    <script src="stage-score.js"></script>
+    <script src="check-audio.js"></script>
+    <script src="settle-audio.js"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            // 名瓷鉴定：鉴.png 开场 + 鉴定背景图.webp 场景 + 逐个瓷器的引导鉴定
+            // 每个瓷器：png 为闪烁提示图，webp 为详情介绍动画（x/y 为在 鉴定背景图 上的百分比位置）
+            const IDENTIFY = {
+                hotspots: [
+                    { name: '宋代绿釉瓷鸟', png: '/image/游戏/images/宋代绿釉瓷鸟.webp', ui: '/image/游戏/images/宋代绿釉瓷鸟ui.webp', webp: '/image/游戏/images/瓷器3.webp', x: 39.7, y: 41.6, size: 27.2, hit: 11 },
+                    { name: '北宋乳浊月白釉瓷执壶', png: '/image/游戏/images/北宋乳浊月白釉瓷执壶.webp', ui: '/image/游戏/images/北宋乳浊月白釉瓷执壶ui.webp', webp: '/image/游戏/images/瓷器2.webp', x: 50.3, y: 41.6, size: 30.8, hit: 11 },
+                    { name: '唐代青瓷索纹执壶', png: '/image/游戏/images/唐代青瓷索纹执壶.webp', ui: '/image/游戏/images/唐代青瓷索纹执壶ui.webp', webp: '/image/游戏/images/瓷器1.webp', x: 70.0, y: 35.2, size: 28.1, hit: 12 },
+                    { name: '白瓷绿彩草叶纹环柄杯', png: '/image/游戏/images/白瓷绿彩草叶纹环柄杯.webp', ui: '/image/游戏/images/白瓷绿彩草叶纹环柄杯ui.webp', webp: '/image/游戏/images/瓷器4.webp', x: 32.2, y: 50.4, size: 16.2, hit: 8 },
+                    { name: '宋代省油灯', png: '/image/游戏/images/宋代省油灯.webp', ui: '/image/游戏/images/宋代省油灯ui.webp', webp: '/image/游戏/images/瓷器5.webp', x: 70.4, y: 52.9, size: 18.8, hit: 9 }
+                ],
+                // 引导顺序：绿釉瓷鸟 → 北宋乳浊月白釉瓷执壶 → 其余依次
+                order: [0, 1, 2, 3, 4]
+            };
+
+            const $ = (id) => document.getElementById(id);
+
+            // 按需预取：只拉当前/下一个热点的图与动画（全量预取要上百 MB）
+            function preloadHotspot(i) {
+                const h = IDENTIFY.hotspots[i];
+                if (!h) return;
+                [h.png, h.ui, h.webp].forEach((src) => {
+                    const im = new Image();
+                    im.src = src;
+                });
+            }
+            const intro = $('intro');
+            const game = $('game');
+            const hotspotsEl = $('hotspots');
+            const flash = $('flash');
+            const flashImg = $('flash-img');
+            const reveal = $('reveal');
+            const revealImg = $('reveal-img');
+            const tip = $('tip');
+            const circle = $('circle');
+            const popup = $('popup');
+            const popupCanvas = $('popup-canvas');
+            const popupImg = $('popup-img');
+            const toastEl = $('toast');
+            const settlement = $('settlement');
+            const settleScore = $('settle-score');
+            const settleBack = $('settle-back');
+            const exitBtn = $('exit-btn');
+            let toastTimer = null;
+            // 游戏计时与进度
+            let identifyStartTime = 0;
+            let viewedCount = 0;
+            let popupPlayTimer = null;
+            let orderPos = -1;          // 当前处于 IDENTIFY.order 的第几个位置
+            let identifyPhase = 'idle'; // idle|tip|circle|flash|view
+            let identifyTimer = null;
+            let gameCompleteReady = false;
+
+            // 起始目录背景视频：/image/背景.mp4（服务器 /image/ 别名挂载）
+            // 1) 无缝循环：不再「播完 → 停在最后一帧 4 秒 → 再重播」。
+            // 2) 把播放速度锁死：浏览器原生 loop 在回到开头的一瞬间会把 playbackRate
+            //    重置回 defaultPlaybackRate，于是越播越快；这里两个值一起设，
+            //    并在每个媒体事件 + 定时器里纠正，任何情况下都保持 INTRO_RATE。
+            // 3) 平板 / 微信里 autoplay 经常被拦截：poster 兜底 + 首次手势补播 +
+            //    前几秒轮询补播，保证开场背景一定能看到。
+            const introVideo = document.querySelector('.intro-video');
+            if (introVideo) {
+                const INTRO_RATE = 1;   // 播放速度：1 = 原速，0.5 = 慢一倍
+                introVideo.muted = true;
+                introVideo.setAttribute('muted', '');
+                introVideo.loop = true;
+                introVideo.defaultPlaybackRate = INTRO_RATE;
+                introVideo.playbackRate = INTRO_RATE;
+                try { introVideo.load(); } catch (err) { /* ignore */ }
+
+                const lockRate = () => {
+                    if (introVideo.playbackRate !== INTRO_RATE) {
+                        console.warn('[intro-video] playbackRate 被改成 ' + introVideo.playbackRate + '，已锁回 ' + INTRO_RATE);
+                        introVideo.playbackRate = INTRO_RATE;
+                    }
+                    if (introVideo.defaultPlaybackRate !== INTRO_RATE) {
+                        introVideo.defaultPlaybackRate = INTRO_RATE;
+                    }
+                };
+                ['loadedmetadata', 'play', 'playing', 'seeked', 'timeupdate', 'ratechange', 'ended']
+                    .forEach((ev) => introVideo.addEventListener(ev, lockRate));
+                setInterval(lockRate, 250);
+
+                const playIntroVideo = () => {
+                    lockRate();
+                    if (!introVideo.paused) return;
+                    const p = introVideo.play();
+                    if (p && p.catch) p.catch(() => {});
+                };
+                if (introVideo.readyState >= 1) {
+                    introVideo.currentTime = 0;
+                    playIntroVideo();
+                } else {
+                    introVideo.addEventListener('loadedmetadata', playIntroVideo, { once: true });
+                }
+                ['loadeddata', 'canplay', 'canplaythrough'].forEach((ev) => {
+                    introVideo.addEventListener(ev, playIntroVideo);
+                });
+                // 平板/微信：自动播放被拦截时，首次触摸或点击立即补播
+                ['pointerdown', 'touchstart', 'click', 'keydown'].forEach((ev) => {
+                    document.addEventListener(ev, playIntroVideo, true);
+                });
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) {
+                        introVideo.pause();
+                    } else {
+                        playIntroVideo();
+                    }
+                });
+                // 兜底：开场前几秒每秒确认一次是否真的在播
+                let introTries = 0;
+                const introRetry = setInterval(() => {
+                    introTries += 1;
+                    playIntroVideo();
+                    if (introTries >= 8 || !introVideo.paused) clearInterval(introRetry);
+                }, 1000);
+            }
+
+
+
+            function showToast(text) {
+                toastEl.textContent = text;
+                toastEl.classList.remove('hidden');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toastEl.classList.add('hidden'), 1800);
+            }
+
+            function clearIdentifyTimer() {
+                if (identifyTimer !== null) {
+                    clearTimeout(identifyTimer);
+                    identifyTimer = null;
+                }
+            }
+
+            // 顶部进度：把前 count 个小圆点亮（实心）
+            function setProgress(count) {
+                const dots = document.querySelectorAll('#identify-progress .idp-dot');
+                Array.prototype.forEach.call(dots, (d, i) => {
+                    d.classList.toggle('done', i < count);
+                });
+            }
+
+            // 第一步：底部先出现“轻触瓷器.png”，停顿后淡出
+            function startTip() {
+                identifyPhase = 'tip';
+                tip.classList.remove('out');
+                tip.classList.remove('hidden');
+                identifyTimer = setTimeout(() => {
+                    tip.classList.add('out');
+                    identifyTimer = setTimeout(() => {
+                        tip.classList.add('hidden');
+                        showCircle();
+                    }, 700);
+                }, 1500 + 800);
+            }
+
+            // 第二步：右侧出现“识瓷介绍.webp”提示圈
+            function showCircle() {
+                identifyPhase = 'circle';
+                circle.classList.remove('hidden');
+            }
+
+            // 第三步：当前瓷器的 png 在其位置闪烁提示（可点击查看）
+            function startFlash(pos) {
+                const i = IDENTIFY.order[pos];
+                const h = IDENTIFY.hotspots[i];
+                if (!h) { markCompleteReady(); return; }
+                if (window.CheckAudio) window.CheckAudio.flash(pos);
+                orderPos = pos;
+                preloadHotspot(IDENTIFY.order[pos]);
+                preloadHotspot(IDENTIFY.order[pos + 1]);
+                identifyPhase = 'flash';
+                flashImg.src = h.png;
+                flashImg.alt = h.name;
+                flash.style.left = h.x + '%';
+                flash.style.top = h.y + '%';
+                flash.style.width = (h.size || 18) + 'em';
+                reveal.classList.remove('show');
+                const key = $('active-hotkey');
+                if (key) {
+                    key.style.left = h.x + '%';
+                    key.style.top = h.y + '%';
+                    key.style.width = (h.hit || 11) + 'em';
+                    key.style.display = 'block';
+                }
+                flash.classList.remove('show');
+                void flash.offsetWidth;
+                flash.classList.add('show');
+            }
+
+            // 第四步：点击闪烁瓷器后，在瓷器原位置渐显对应 *ui.png，停顿后播 webp 介绍
+            function viewCurrent(i) {
+                const h = IDENTIFY.hotspots[i];
+                if (!h || h.viewed) return;
+                if (window.CheckAudio) window.CheckAudio.clickPorcelain();
+                h.viewed = true;
+                viewedCount++;
+                setProgress(viewedCount);
+                identifyPhase = 'view';
+                const key = $('active-hotkey');
+                if (key) key.style.display = 'none';
+                flash.classList.remove('show');
+
+                revealImg.src = h.ui;
+                revealImg.alt = h.name;
+                reveal.style.left = h.x + '%';
+                reveal.style.top = h.y + '%';
+                reveal.style.width = (h.size || 18) + 'em';
+                reveal.classList.remove('show');
+                void reveal.offsetWidth;
+                reveal.classList.add('show');
+
+                // 遮罩立即出现：ui.png 浮动在暗色遮罩之上，停顿后再换 webp
+                popup.classList.remove('hidden');
+                popupCanvas.classList.add('hidden');
+                popupImg.classList.add('hidden');
+                popupImg.removeAttribute('src');
+                clearTimeout(popupPlayTimer);
+
+                identifyTimer = setTimeout(() => {
+                    reveal.classList.remove('show');
+                    // 停顿后在同一遮罩上播放 webp
+                    if (window.CheckAudio) window.CheckAudio.intro(orderPos);
+                    playWebpOnce(h.webp, () => {
+                        popup.classList.add('hidden');
+                        popupImg.classList.add('hidden');
+                        popupImg.removeAttribute('src');
+                        if (viewedCount >= IDENTIFY.hotspots.length) {
+                            markCompleteReady();
+                        } else {
+                            startFlash(orderPos + 1);
+                        }
+                    });
+                }, 2000);
+            }
+
+            function buildHotkeys() {
+                hotspotsEl.innerHTML = '';
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'hotspot ghost';
+                btn.id = 'active-hotkey';
+                btn.setAttribute('aria-label', '待点击瓷器');
+                btn.style.display = 'none';
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (identifyPhase !== 'flash' || orderPos < 0) return;
+                    viewCurrent(IDENTIFY.order[orderPos]);
+                });
+                hotspotsEl.appendChild(btn);
+            }
+
+            // 用原生 <img> 播放动画 webp：浏览器自身解码比手动逐帧画布播放更顺滑，
+            // 避免大尺寸 webp 在逐帧解码时出现卡顿。这里按帧数估算时长，播完即收起。
+            function playWebpOnce(src, onDone) {
+                popupCanvas.classList.add('hidden');
+                popupCanvas.width = 0;
+                popupCanvas.height = 0;
+                popupImg.classList.remove('hidden');
+                popupImg.src = src;
+                clearTimeout(popupPlayTimer);
+
+                let done = false;
+                function finish() {
+                    if (done) return;
+                    done = true;
+                    onDone();
+                }
+
+                if (typeof ImageDecoder !== 'undefined') {
+                    fetch(src)
+                        .then((res) => res.arrayBuffer())
+                        .then((buf) => {
+                            if (done) return;
+                            const decoder = new ImageDecoder({ data: buf, type: 'image/webp' });
+                            return decoder.tracks.ready.then(() => {
+                                if (done) {
+                                    try { decoder.close(); } catch (e) {}
+                                    return;
+                                }
+                                const track = decoder.tracks.selectedTrack;
+                                const count = track && track.frameCount ? track.frameCount : 0;
+                                const duration = count > 0 ? Math.max(1000, count * 40) : 6500;
+                                try { decoder.close(); } catch (e) {}
+                                popupPlayTimer = setTimeout(finish, duration);
+                            });
+                        })
+                        .catch(() => {
+                            if (!done) popupPlayTimer = setTimeout(finish, 6500);
+                        });
+                } else {
+                    popupPlayTimer = setTimeout(finish, 6500);
+                }
+            }
+
+            function showGame() {
+                // 进入正式游戏：停掉「游戏初始界面」循环 BGM，播放正式游戏 BGM；
+                // 同时关闭初始界面的点击 UI 音效，后续点击交给名瓷鉴定音效。
+                if (window.IntroAudio) {
+                    window.IntroAudio.setClickEnabled(false);
+                }
+                if (window.GameBgm) {
+                    window.GameBgm.start();
+                } else if (window.IntroAudio) {
+                    window.IntroAudio.stopBgm();
+                }
+                if (window.CheckAudio) window.CheckAudio.startGame();
+                intro.classList.add('hidden');
+                game.classList.remove('hidden');
+                settlement.classList.add('hidden');
+                popup.classList.add('hidden');
+                tip.classList.add('hidden');
+                tip.classList.remove('out');
+                circle.classList.add('hidden');
+                flash.classList.remove('show');
+                flashImg.removeAttribute('src');
+                reveal.classList.remove('show');
+                revealImg.removeAttribute('src');
+                const key = $('active-hotkey');
+                if (key) key.style.display = 'none';
+                clearTimeout(popupPlayTimer);
+                clearIdentifyTimer();
+                // 重置进度与热点
+                viewedCount = 0;
+                setProgress(0);
+                const prog = $('identify-progress');
+                if (prog) prog.classList.add('hidden');
+                orderPos = -1;
+                identifyPhase = 'idle';
+                IDENTIFY.hotspots.forEach((h) => { h.viewed = false; });
+                Array.prototype.forEach.call(hotspotsEl.children, (btn) => btn.classList.remove('viewed'));
+                identifyStartTime = Date.now();
+                // 只预取前两个热点；其余在轮到它时再拉，避免一进游戏就下上百 MB
+                preloadHotspot(IDENTIFY.order[0]);
+                preloadHotspot(IDENTIFY.order[1]);
+                // 右下角「退出」：随时按已完成的阶段结算
+                gameCompleteReady = false;
+                if (exitBtn) exitBtn.classList.remove('hidden', 'ready');
+                // 进入后启动引导：底部轻触瓷器 → 右侧识瓷介绍 → 逐个瓷器
+                startTip();
+            }
+
+            // 只有当前游戏（active）的组件可点击进入，其他组件点击不跳转
+            document.querySelectorAll('.intro-comp-btn').forEach((btn) => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const wrap = btn.closest('.intro-component');
+                    if (wrap && wrap.classList.contains('active')) {
+                        showGame();
+                    }
+                });
+            });
+            // 按完成阶段判分：5 件瓷器每件 20 分，全部鉴定完给 99.9（不满分），
+            // 这样中途点「退出」也能得到有差异的分数。
+            function computeScore() {
+                if (window.stageScore) return window.stageScore(viewedCount, IDENTIFY.order.length);
+                return Math.min(99.9, Math.round(viewedCount * (100 / IDENTIFY.order.length) * 10) / 10);
+            }
+
+            function markCompleteReady() {
+                if (gameCompleteReady) return;
+                gameCompleteReady = true;
+                if (exitBtn) {
+                    exitBtn.classList.remove('hidden', 'ready');
+                    void exitBtn.offsetWidth;
+                    exitBtn.classList.add('ready');
+                }
+            }
+
+            // 结算数字从 0 滚动累加到目标分数，和分数渐显动画（延迟 3s）对齐。
+            function animateScore(el, target, duration) {
+                const start = performance.now();
+                const fmt = window.formatScore || ((v) => String(Math.round(v)));
+                const step = (now) => {
+                    const k = Math.min(1, (now - start) / duration);
+                    const eased = 1 - Math.pow(1 - k, 3);
+                    if (k >= 1) {
+                        el.textContent = fmt(target);
+                        return;
+                    }
+                    el.textContent = String(Math.round(target * eased));
+                    requestAnimationFrame(step);
+                };
+                requestAnimationFrame(step);
+            }
+
+            function showSettlement() {
+                // 防止重复触发
+                if (settlement && !settlement.classList.contains('hidden')) return;
+                clearIdentifyTimer();
+                tip.classList.add('hidden');
+                circle.classList.add('hidden');
+                flash.classList.remove('show');
+                reveal.classList.remove('show');
+                const key = $('active-hotkey');
+                if (key) key.style.display = 'none';
+                if (exitBtn) exitBtn.classList.add('hidden');
+                if (exitBtn) exitBtn.classList.remove('ready');
+                const score = computeScore();
+                // 名瓷鉴定分数存入 porcelain_score，供找碴对缝结算页读取
+                localStorage.setItem('porcelain_score', String(score));
+                settleScore.textContent = '0';
+                game.classList.add('hidden');
+                popup.classList.add('hidden');
+                settlement.classList.remove('hidden');
+                setTimeout(() => animateScore(settleScore, score, 1500), 3600);
+                // 通知桌面端：本节点已经完成，二维码节点可以自动解锁。
+                // 一阶段都没完成就退出，不算通关，后面的小游戏仍然锁定。
+                if (viewedCount > 0) {
+                    try {
+                        fetch('/api/complete?node=n01_identify&score=' + encodeURIComponent(score), { method: 'POST' }).catch(() => {});
+                    } catch (err) {
+                        /* 忽略旧服务进程不支持的接口 */
+                    }
+                }
+            }
+
+            // 结算页：返回按钮回到主页
+            settleBack.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+
+            // 右下角「退出」：直接跳到结算页，按已完成阶段判分
+            if (exitBtn) {
+                exitBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showSettlement();
+                });
+            }
+
+            // 点击右侧“识瓷介绍”提示圈后开始逐件鉴定
+            circle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (identifyPhase !== 'circle') return;
+                circle.classList.add('hidden');
+                // 点了“识瓷介绍”后，顶部进度圆圈才出现
+                const prog = $('identify-progress');
+                if (prog) prog.classList.remove('hidden');
+                startFlash(0);
+            });
+
+            buildHotkeys();
+
+            // ---------- 开发辅助：位置校准 ----------
+            const calibBtn = $('calib-btn');
+            const calibPanel = $('calib-panel');
+            const livePill = $('live-pill');
+            const liveText = $('live-text');
+            let calibOn = false;
+
+            const clampNum = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+            let calibOriginal = null;
+            let calibItems = [];
+
+            function calibConfigText() {
+                return 'IDENTIFY.hotspots = [\n' + IDENTIFY.hotspots.map((h, i) =>
+                    "  { name: '" + h.name + "', x: " + (+h.x).toFixed(1) + ", y: " + (+h.y).toFixed(1) +
+                    ", size: " + (Math.round(h.size * 10) / 10) + ", hit: " + h.hit + " }"
+                ).join(',\n') + '\n];';
+            }
+
+            function fillCalibPanel(circlePos) {
+                if (!calibPanel) return;
+                let html = '<h4>位置清单（拖动图片移动 / 拖右下角改大小）</h4>';
+                IDENTIFY.hotspots.forEach((h, i) => {
+                    html += '<div class="cp-row"><span class="cp-idx">' + (i + 1) + '</span>' +
+                        '<span class="cp-name">' + h.name + '</span>' +
+                        '<span class="cp-xy" id="calib-xy-' + i + '">x ' + h.x + ' · y ' + h.y + ' · size ' + h.size + ' · hit ' + h.hit + '</span></div>';
+                });
+                if (circlePos) {
+                    html += '<div class="cp-row" style="color:#ffe6a8"><span class="cp-idx">◉</span>' +
+                        '<span class="cp-name">识瓷介绍.webp 提示圈</span>' +
+                        '<span class="cp-xy">' + circlePos + '</span></div>';
+                }
+                html += '<div class="cp-actions"><button type="button" id="calib-copy">复制配置</button>' +
+                    '<button type="button" id="calib-reset">还原</button></div>';
+                html += '<textarea id="calib-cfg" readonly spellcheck="false"></textarea>';
+                html += '<div class="cp-hint">把“复制配置”的内容发我，我来改回代码。点场景任意处读数。</div>';
+                calibPanel.innerHTML = html;
+                calibPanel.classList.remove('hidden');
+                calibPanel.querySelector('#calib-cfg').value = calibConfigText();
+                calibPanel.querySelector('#calib-copy').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const ta = calibPanel.querySelector('#calib-cfg');
+                    const txt = ta.value;
+                    ta.focus(); ta.select();
+                    let ok = false;
+                    try { ok = document.execCommand('copy'); } catch (err) {}
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(txt).then(() => showToast('已复制配置')).catch(() => showToast(ok ? '已复制配置' : '已全选，请按 Ctrl+C'));
+                    } else {
+                        showToast(ok ? '已复制配置' : '已全选，请按 Ctrl+C');
+                    }
+                });
+                calibPanel.querySelector('#calib-reset').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!calibOriginal) return;
+                    IDENTIFY.hotspots.forEach((h, i) => { h.x = calibOriginal[i].x; h.y = calibOriginal[i].y; h.size = calibOriginal[i].size; });
+                    buildCalibItems();
+                });
+            }
+
+            function syncCalibItem(i) {
+                const h = IDENTIFY.hotspots[i];
+                const it = calibItems[i];
+                if (!it) return;
+                it.el.style.left = h.x + '%';
+                it.el.style.top = h.y + '%';
+                it.el.style.width = h.size + 'em';
+                it.el.style.height = h.size + 'em';
+                if (it.hitbox) {
+                    it.hitbox.style.width = (h.hit || 11) + 'em';
+                    it.hitbox.style.height = (h.hit || 11) + 'em';
+                }
+                it.label.textContent = (i + 1) + ' ' + h.name + ' · ' + (+h.x).toFixed(1) + ',' + (+h.y).toFixed(1) + ' · S' + (Math.round(h.size * 10) / 10);
+                const row = calibPanel && calibPanel.querySelector('#calib-xy-' + i);
+                if (row) row.innerHTML = 'x ' + h.x + ' · y ' + h.y + ' · size ' + h.size + ' · hit ' + h.hit;
+                const cfg = calibPanel && calibPanel.querySelector('#calib-cfg');
+                if (cfg) cfg.value = calibConfigText();
+            }
+
+            function buildCalibItems() {
+                Array.prototype.forEach.call(game.querySelectorAll('.calib-item'), (c) => c.remove());
+                calibItems = [];
+                const gr = game.getBoundingClientRect();
+                IDENTIFY.hotspots.forEach((h, i) => {
+                    const el = document.createElement('div');
+                    el.className = 'calib-item';
+                    el.style.left = h.x + '%';
+                    el.style.top = h.y + '%';
+                    el.style.width = h.size + 'em';
+                    el.style.height = h.size + 'em';
+                    const center = document.createElement('span');
+                    center.className = 'calib-center';
+                    const hitbox = document.createElement('span');
+                    hitbox.className = 'calib-hitbox';
+                    hitbox.style.width = (h.hit || 11) + 'em';
+                    hitbox.style.height = (h.hit || 11) + 'em';
+                    const label = document.createElement('span');
+                    label.className = 'calib-label';
+                    const handle = document.createElement('span');
+                    handle.className = 'calib-resize';
+                    handle.setAttribute('title', '拖动改大小');
+                    const img = document.createElement('img');
+                    img.className = 'calib-img';
+                    img.src = h.png;
+                    img.alt = h.name;
+                    img.draggable = false;
+                    el.appendChild(center);
+                    el.appendChild(img);
+                    el.appendChild(hitbox);
+                    el.appendChild(label);
+                    el.appendChild(handle);
+                    game.appendChild(el);
+                    calibItems[i] = { el, label, hitbox, h };
+
+                    // 拖动移动
+                    el.addEventListener('pointerdown', (e) => {
+                        if (e.target === handle) return;
+                        e.preventDefault(); e.stopPropagation();
+                        const startX = e.clientX, startY = e.clientY, hx = h.x, hy = h.y;
+                        const move = (ev) => {
+                            h.x = clampNum(hx + (ev.clientX - startX) / gr.width * 100, 3, 97);
+                            h.y = clampNum(hy + (ev.clientY - startY) / gr.height * 100, 3, 97);
+                            syncCalibItem(i);
+                        };
+                        const up = () => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); };
+                        document.addEventListener('pointermove', move);
+                        document.addEventListener('pointerup', up);
+                    });
+                    // 拖动右下角改大小
+                    handle.addEventListener('pointerdown', (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        const startX = e.clientX, startY = e.clientY, startSize = h.size;
+                        const move = (ev) => {
+                            const dx = (ev.clientX - startX) / gr.width * 100;
+                            const dy = (ev.clientY - startY) / gr.height * 100;
+                            h.size = clampNum(startSize + (dx + dy) * 0.7, 6, 34);
+                            syncCalibItem(i);
+                        };
+                        const up = () => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); };
+                        document.addEventListener('pointermove', move);
+                        document.addEventListener('pointerup', up);
+                    });
+                    syncCalibItem(i);
+                });
+                const cm = document.createElement('div');
+                cm.className = 'calib-marker';
+                const vw = window.innerWidth, vh = window.innerHeight;
+                const cw = Math.min(200, Math.max(90, 0.11 * vw));
+                const cxv = vw - 0.20 * vw - cw / 2, cyv = vh * 0.46;
+                const cx = ((cxv - gr.left) / gr.width * 100).toFixed(1);
+                const cy = ((cyv - gr.top) / gr.height * 100).toFixed(1);
+                cm.style.left = cx + '%';
+                cm.style.top = cy + '%';
+                const clabel = document.createElement('span');
+                clabel.textContent = '识瓷介绍  ' + cx + ',' + cy;
+                cm.appendChild(clabel);
+                game.appendChild(cm);
+                return cx + ',' + cy;
+            }
+
+            function setCalib(on) {
+                calibOn = on;
+                game.classList.toggle('calib', on);
+                calibBtn.classList.toggle('active', on);
+                calibBtn.setAttribute('aria-pressed', String(on));
+                Array.prototype.forEach.call(game.querySelectorAll('.calib-cross'), (c) => c.remove());
+                Array.prototype.forEach.call(game.querySelectorAll('.calib-marker'), (c) => c.remove());
+                Array.prototype.forEach.call(game.querySelectorAll('.calib-item'), (c) => c.remove());
+                if (on) {
+                    calibOriginal = IDENTIFY.hotspots.map((h) => ({ x: h.x, y: h.y, size: h.size }));
+                    const circlePos = buildCalibItems();
+                    fillCalibPanel(circlePos);
+                } else if (calibPanel) {
+                    calibPanel.classList.add('hidden');
+                }
+            }
+
+            calibBtn.addEventListener('click', (e) => { e.stopPropagation(); setCalib(!calibOn); });
+
+            window.addEventListener('keydown', (e) => {
+                if ((e.key === 'h' || e.key === 'H') && !game.classList.contains('hidden')) {
+                    e.preventDefault();
+                    setCalib(!calibOn);
+                }
+            });
+
+            // 校准模式下：点空白处读取坐标（点中瓷器框则不触发）
+            game.addEventListener('click', (e) => {
+                if (!calibOn) return;
+                if (e.target.closest && e.target.closest('.calib-item')) return;
+                const r = game.getBoundingClientRect();
+                const x = ((e.clientX - r.left) / r.width * 100).toFixed(1);
+                const y = ((e.clientY - r.top) / r.height * 100).toFixed(1);
+                showToast('点击位置  ' + x + '%, ' + y + '%   →  热点 x: ' + x + ', y: ' + y);
+                const cross = document.createElement('div');
+                cross.className = 'calib-cross';
+                cross.style.left = x + '%';
+                cross.style.top = y + '%';
+                game.appendChild(cross);
+            });
+
+            // ---------- 开发辅助：保存文件后实时刷新 ----------
+            let liveHash = null;
+            let liveCount = 0;
+            async function pollLive() {
+                try {
+                    const res = await fetch('/check.html?live=' + Date.now(), { cache: 'no-store' });
+                    const text = await res.text();
+                    let hash = 0;
+                    for (let i = 0; i < text.length; i++) {
+                        hash = ((hash << 5) - hash + text.charCodeAt(i)) >>> 0;
+                    }
+                    if (liveHash !== null && hash !== liveHash) {
+                        livePill.classList.add('warn');
+                        liveText.textContent = '已检测到保存，刷新中…';
+                        setTimeout(() => location.reload(true), 300);
+                        return;
+                    }
+                    liveHash = hash;
+                    livePill.classList.remove('warn');
+                    liveText.textContent = '实时刷新 · 修改后自动刷新';
+                } catch (err) {
+                    // 网络/加载错误时忽略，继续轮询
+                }
+                setTimeout(pollLive, 700);
+            }
+            setTimeout(pollLive, 600);
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>锔瓷记 · 互动环节二维码</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 20px;
+            background: radial-gradient(circle at 50% 20%, rgba(127,157,139,0.18), transparent 46%), #12100c;
+            color: #f2ead9;
+            font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+        }
+        .wrap { width: min(92vw, 520px); text-align: center; }
+        h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 0.18em; margin-bottom: 4px; }
+        .sub { font-size: 0.74rem; letter-spacing: 0.24em; color: #c9a45c; margin-bottom: 20px; }
+        .qr-card {
+            padding: 18px;
+            border: 1px solid rgba(233,220,192,0.22);
+            border-radius: 8px;
+            background: rgba(26,22,17,0.82);
+            box-shadow: 0 22px 60px rgba(0,0,0,0.45);
+        }
+        canvas#qr { width: 280px; height: 280px; image-rendering: pixelated; background:#fff; border-radius: 4px; }
+        .url {
+            margin: 14px 0 6px;
+            font-size: 0.84rem;
+            word-break: break-all;
+            color: rgba(242,234,217,0.82);
+            font-family: "Consolas", "Menlo", monospace;
+        }
+        .row { display: flex; gap: 8px; margin: 6px 0; flex-wrap: wrap; justify-content: center; align-items: center; }
+        label { font-size: 0.74rem; color: rgba(242,234,217,0.7); letter-spacing: 0.1em; }
+        input, select {
+            padding: 6px 10px;
+            background: rgba(18,16,12,0.9);
+            border: 1px solid rgba(201,164,92,0.5);
+            border-radius: 2px;
+            color: #f2ead9;
+            font-size: 0.84rem;
+            font-family: inherit;
+        }
+        input[type=text] { width: 150px; }
+        button {
+            padding: 8px 16px;
+            border: 1px solid #c9a45c;
+            border-radius: 2px;
+            background: transparent;
+            color: #e6c886;
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        button:hover { background: rgba(201,164,92,0.12); }
+        .hint {
+            margin-top: 14px;
+            font-size: 0.76rem;
+            line-height: 1.7;
+            color: rgba(242,234,217,0.6);
+        }
+        .hint b { color: #e6c886; }
+        .seg { display: inline-flex; border: 1px solid rgba(201,164,92,0.5); border-radius: 2px; overflow: hidden; }
+        .seg button { border: none; border-radius: 0; padding: 7px 12px; }
+        .seg button.active { background: rgba(201,164,92,0.2); color: #fff; }
+        .ip-note { font-size: 0.72rem; color: rgba(242,234,217,0.5); margin-top: 4px; min-height: 1em; }
+        a { color: #e6c886; }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <p class="sub">四个互动环节</p>
+        <h1>互动游戏 · 开发者二维码</h1>
+        <div class="qr-card">
+            <canvas id="qr" width="560" height="560"></canvas>
+            <div class="url" id="url-text"></div>
+            <div class="row">
+                <a id="open-link" href="#" target="_blank" rel="noopener"><button type="button">在新标签打开</button></a>
+                <button type="button" id="copy-btn">复制链接</button>
+            </div>
+            <div class="row">
+                <label>协议</label>
+                <select id="proto">
+                    <option value="http:">http</option>
+                    <option value="https:">https</option>
+                </select>
+                <label>主机</label>
+                <input type="text" id="host" autocomplete="off">
+                <label>端口</label>
+                <input type="text" id="port" autocomplete="off" style="width:70px">
+            </div>
+            <div class="row">
+                <label>目标</label>
+                <div class="seg" id="target-seg">
+                    <button type="button" data-target="check.html" class="active">名瓷鉴定 · 直连</button>
+                    <button type="button" data-target="ar.html?node=n01_identify">名瓷鉴定 · QR 路由</button>
+                    <button type="button" data-target="align.html">找碴对缝 · 直连</button>
+                    <button type="button" data-target="ar.html?node=n02_align">找碴对缝 · QR 路由</button>
+                    <button type="button" data-target="bind.html">绑扎 · 直连</button>
+                    <button type="button" data-target="ar.html?node=n03_bind">绑扎 · QR 路由</button>
+                    <button type="button" data-target="nail.html">上钉 · 直连</button>
+                    <button type="button" data-target="ar.html?node=n04_nail">上钉 · QR 路由</button>
+                </div>
+            </div>
+            <div class="ip-note" id="ip-note"></div>
+        </div>
+        <p class="hint">
+            手机/平板与电脑需在同一局域网。<b>主机请填电脑的局域网 IP（如 192.168.x.x），不要用 localhost</b>，否则手机扫码后访问不到。<br>
+            iOS 启用陀螺仪需 <b>https</b>（自签证书首次访问需信任）。已尽力自动探测局域网 IP，失败请手动填写。
+        </p>
+    </div>
+
+    <script src="../vendor/qrcode-bundle.js"></script>
+    <script>
+    (function () {
+        var canvas = document.getElementById('qr');
+        var urlText = document.getElementById('url-text');
+        var openLink = document.getElementById('open-link');
+        var proto = document.getElementById('proto');
+        var host = document.getElementById('host');
+        var port = document.getElementById('port');
+        var ipNote = document.getElementById('ip-note');
+        var target = 'check.html';
+
+        // 初始默认值取当前访问地址
+        proto.value = location.protocol;
+        host.value = location.hostname;
+        port.value = location.port || (location.protocol === 'https:' ? '8443' : '8000');
+
+        function renderQR(text) {
+            var size = canvas.width, margin = Math.round(size * 0.09);
+            var ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, size, size);
+            if (typeof QRCode === 'undefined' || typeof QRErrorCorrectLevel === 'undefined') {
+                ctx.fillStyle = '#13110d';
+                ctx.font = '20px sans-serif';
+                ctx.fillText('二维码组件缺失', margin, size / 2);
+                return;
+            }
+            var qr = new QRCode(0, QRErrorCorrectLevel.M);
+            qr.addData(text);
+            qr.make();
+            var count = qr.getModuleCount();
+            var cell = (size - margin * 2) / count;
+            ctx.fillStyle = '#13110d';
+            for (var r = 0; r < count; r++) {
+                for (var c = 0; c < count; c++) {
+                    if (qr.isDark(r, c)) {
+                        ctx.fillRect(margin + c * cell, margin + r * cell, Math.ceil(cell), Math.ceil(cell));
+                    }
+                }
+            }
+        }
+
+        function buildUrl() {
+            var p = port.value.trim();
+            var h = host.value.trim();
+            var base = proto.value + '//' + h + (p ? ':' + p : '');
+            return base + '/' + target;
+        }
+
+        function update() {
+            var url = buildUrl();
+            renderQR(url);
+            urlText.textContent = url;
+            openLink.href = url;
+        }
+
+        // 目标切换
+        document.getElementById('target-seg').addEventListener('click', function (e) {
+            var btn = e.target.closest('button[data-target]');
+            if (!btn) return;
+            target = btn.getAttribute('data-target');
+            Array.prototype.forEach.call(this.querySelectorAll('button'), function (b) {
+                b.classList.toggle('active', b === btn);
+            });
+            update();
+        });
+
+        [proto, host, port].forEach(function (el) {
+            el.addEventListener('input', update);
+            el.addEventListener('change', update);
+        });
+
+        document.getElementById('copy-btn').addEventListener('click', function () {
+            var url = buildUrl();
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function () {
+                    flash('已复制：' + url);
+                }, function () { flash('复制失败，请手动选中'); });
+            } else { flash('复制失败，请手动选中'); }
+        });
+
+        function flash(msg) {
+            ipNote.textContent = msg;
+            setTimeout(function () { ipNote.textContent = ''; }, 1600);
+        }
+
+        // 尽力自动探测局域网 IP（WebRTC ICE），失败则保持 location.hostname
+        function detectLanIP() {
+            return new Promise(function (resolve) {
+                var found = null;
+                try {
+                    var pc = new RTCPeerConnection({ iceServers: [] });
+                    pc.createDataChannel('');
+                    pc.onicecandidate = function (e) {
+                        if (!e.candidate) { pc.close(); resolve(found); return; }
+                        var c = e.candidate.candidate || '';
+                        var m = /([0-9]{1,3}(?:\.[0-9]{1,3}){3})/.exec(c);
+                        if (m && m[1] !== '127.0.0.1' && !/^0\./.test(m[1])) {
+                            var ip = m[1];
+                            // 优先私网地址
+                            var priv = /^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(ip);
+                            if (priv) { found = ip; }
+                            else if (!found) { found = ip; }
+                        }
+                    };
+                    pc.createOffer().then(function (o) { return pc.setLocalDescription(o); }).catch(function () { resolve(found); });
+                    setTimeout(function () { try { pc.close(); } catch (e) {} resolve(found); }, 2000);
+                } catch (e) { resolve(null); }
+            });
+        }
+
+        // 仅当当前是 localhost/127.0.0.1 时才尝试自动替换为局域网 IP
+        if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+            ipNote.textContent = '正在探测局域网 IP…';
+            detectLanIP().then(function (ip) {
+                if (ip) {
+                    host.value = ip;
+                    ipNote.textContent = '已自动填入探测到的 IP：' + ip + '（如不对请手改）';
+                } else {
+                    ipNote.textContent = '未能自动探测 IP，请手动填写电脑局域网 IP';
+                }
+                update();
+            });
+        }
+
+        update();
+    })();
+    </script>
+</body>
+</html>

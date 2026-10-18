@@ -1,0 +1,9 @@
+server_out.log
+*.log
+__pycache__/
+*.pyc
+node_modules/
+.env
+.venv/
+.idea/
+.vscode/

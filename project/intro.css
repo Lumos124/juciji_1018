@@ -1,0 +1,142 @@
+/* ============================================================
+   焗瓷记 · 起始选段动画 + 持久边框（绑扎定型 / 打孔上钉 共用）
+   - #frame-img：image/边框.png，全屏 fixed，z-index 高于游戏层，从始至终常驻
+   - #intro-overlay：背景.mp4 视频 + 4 个段位字（鉴/对/绑/钉），进入后高亮当前段、其余变暗，
+                    用户点击高亮字后整层淡出（边框不动）→ 进入游戏
+   - 动效对齐 check(1).html：整层淡入 0.9s、视频背景循环播放、边框从 0.98 放大到 1（2s）、
+                    当前段位字从右侧滑入（1.6s + 0.5s 延迟）
+  所有位置/尺寸参数在 intro-common.js 的 PRE_INTRO_CONFIG 中集中维护
+   ============================================================ */
+
+:root {
+    --intro-z-frame: 200;       /* 边框：始终最上层，pointer-events:none 不挡点击；高于 intro-overlay(100) 让起始阶段也可见 */
+    --intro-z-overlay: 100;     /* 起始动画整层 */
+    --intro-z-chars: 110;       /* 4 个段位字（在 overlay 内部） */
+}
+
+/* ---------- 持久边框：全屏 fixed，贯穿整个游戏 ---------- */
+#frame-img {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;       /* 边框图严格铺满，不裁不变形 */
+    pointer-events: none;   /* 边框只是视觉装饰，不接收点击 */
+    z-index: var(--intro-z-frame);
+    transform-origin: center;
+    animation: introFrameGrow 2s ease-out forwards;
+}
+/* 结算转场：边框和 logo 与黑屏一起渐渐消失 */
+#frame-img,
+#intro-logo {
+    transition: opacity 1.2s ease;
+}
+#frame-img.settle-hide,
+#intro-logo.settle-hide {
+    opacity: 0;
+}
+@keyframes introFrameGrow {
+    from { transform: scale(0.98); }
+    to { transform: scale(1); }
+}
+
+/* ---------- 起始动画整层 ---------- */
+#intro-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--intro-z-overlay);
+    background: #000;
+    opacity: 0;
+    transition: opacity 0.9s ease;
+    pointer-events: none;
+}
+#intro-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+#intro-overlay.fade-out {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    pointer-events: none;
+}
+/* 闪黑：用户点击高亮字后，overlay 背景变黑，背景图和字淡出 */
+#intro-overlay.blackout {
+    background: #000;
+}
+#intro-overlay.blackout #intro-bg,
+#intro-overlay.blackout .intro-char {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+/* 内部背景视频（只覆盖 overlay 区域，淡出时随 overlay 一起消失） */
+#intro-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+/* 段位字容器：整体从右侧滑入（同 check.html 的组件动效） */
+#intro-chars {
+    position: absolute;
+    inset: 0;
+    z-index: var(--intro-z-chars);
+    pointer-events: none;
+}
+
+/* ---------- 4 个段位字（鉴/对/绑/钉）---------- */
+.intro-char {
+    position: absolute;
+    object-fit: contain;
+    z-index: var(--intro-z-chars);
+    cursor: pointer;
+    pointer-events: auto;
+    filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.4));
+    transition: transform 0.5s cubic-bezier(.2,.8,.2,1),
+                filter 0.5s ease,
+                opacity 0.5s ease;
+    transform-origin: center center;
+    will-change: transform, filter, opacity;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+/* 当前段（高亮放大）：原图 + 轻微发光，scale 由 inline style 控制（PRE_INTRO_CONFIG.chars.scale） */
+.intro-char.active {
+    opacity: 0;
+    translate: 120% 0;
+    filter: drop-shadow(0 10px 22px rgba(0, 0, 0, 0.4))
+            drop-shadow(0 0 18px rgba(230,200,134,0.85))
+            drop-shadow(0 0 6px rgba(255,220,140,0.6));
+    transition: translate 1.6s cubic-bezier(0.2, 0.8, 0.25, 1) 0.5s,
+                opacity 1.2s ease 0.5s,
+                filter 0.5s ease,
+                transform 0.5s cubic-bezier(.2,.8,.2,1);
+}
+/* 当前段滑入到位：与 check(1).html 的 compSlideIn 相同曲线 */
+.intro-char.active.slide-in {
+    opacity: 1;
+    translate: 0 0;
+}
+/* 非当前段：全亮，悬停轻微放大 + 高光，但不触发关卡 */
+.intro-char.idle {
+    opacity: 1;
+    cursor: default;
+}
+.intro-char.idle:hover {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 10px rgba(230,200,134,0.55))
+            drop-shadow(0 0 3px rgba(255,220,140,0.35));
+}
+/* 非当前段（变暗）：使用 _暗 图 + 透明度 0.5 */
+.intro-char.dim {
+    opacity: 0.55;
+    filter: grayscale(0.3) brightness(0.7);
+}
+/* 用户点击高亮字后，整层 fade-out；高亮字本身短促回弹一下 */
+.intro-char.clicked {
+    transform: scale(calc(var(--char-scale, 1.18) * 1.05));
+    transition: transform 0.15s ease;
+}

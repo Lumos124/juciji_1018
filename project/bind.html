@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#12100c">
+    <link rel="icon" href="data:,">
+    <title>锔瓷记 · 绑扎定型</title>
+    <link rel="stylesheet" href="bind.css">
+    <link rel="stylesheet" href="game-end.css">
+    <script src="editors/game-end-layout.js"></script>
+    <link rel="stylesheet" href="intro.css">
+</head>
+<body>
+    <!-- 舞台：所有图层都在此绝对定位 -->
+    <div id="stage">
+
+        <!-- 起始选段动画层（背景 + 4 段位字，点击后淡出） -->
+        <div id="intro-overlay"></div>
+
+        <!-- 持久边框：贯穿游戏始终，fixed 全屏，z-index 50 -->
+        <img id="frame-img" alt="">
+
+        <!-- 黑屏遮罩（透明度由 JS 控制 0→1） -->
+        <div id="blackout" class="layer fill"></div>
+
+        <!-- 工作台背景（黑屏后再亮起时显示） -->
+        <img id="table-bg" class="layer fill hidden" src="/image/游戏/绑扎/image/操作台背景.webp" alt="">
+
+        <!-- 提示：移至操作台（亮起后淡入显示，停留后消失） -->
+        <img id="prompt-move" class="layer fill hidden" src="/image/游戏/绑扎/image/提示——移至操作台.webp" alt="">
+
+        <!-- 提示——开始绑扎定型（闪烁，点击进入） -->
+        <img id="prompt-start-nail" class="prompt hidden" src="/image/游戏/绑扎/image/提示——开始绑扎定型.webp" alt="">
+
+        <!-- 四瓣花（瓷杯下层，相对cup-box，由JS控制位置） -->
+        <img id="flower" class="hidden" src="/image/游戏/绑扎/image/四瓣花.webp" alt="">
+
+        <!-- 右侧底图（井、十、绕） -->
+        <img id="bottom-jing" class="hidden" src="/image/游戏/绑扎/image/井底图.webp" alt="">
+        <img id="bottom-shi" class="hidden" src="/image/游戏/绑扎/image/十底图.webp" alt="">
+        <img id="bottom-rao" class="hidden" src="/image/游戏/绑扎/image/绕底图.webp" alt="">
+
+        <!-- 滑动icon（从左侧滑入，在边框下层） -->
+        <img id="slide-icon" class="hidden" src="/image/游戏/绑扎/image/提示——滑动icon.webp" alt="">
+
+        <!-- 主玩区：瓷杯（偏左） + 成就面板（偏右） -->
+        <div id="play-stage" class="hidden">
+          <div id="play" class="hidden">
+              <!-- 瓷杯盒：杯图 + SVG粉色路径 + 高亮层 + 起终点图标 + 手势墨迹 -->
+              <div id="cup-box">
+                  <img id="cup" class="fill" src="/image/游戏/绑扎/image/瓷杯底图.webp" alt="">
+                  <!-- 粉色提示路径（按当前步骤绘制） -->
+                  <svg id="cup-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"></svg>
+                  <!-- 手势墨迹（滑动时跟随手指的金色轨迹） -->
+                  <svg id="ink-svg" class="hidden" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                      <path id="ink-path" d=""></path>
+                  </svg>
+                  <!-- 高亮层：5 张高亮绳图，初始隐藏，完成后显示 -->
+                  <div id="highlights"></div>
+                  <!-- 起点终点图标 -->
+                  <div id="endpoints"></div>
+              </div>
+
+              <!-- 成就面板盒：三个槽位的成就覆盖层 + 文字横幅 -->
+              <div id="panel-box">
+                  <div id="slots"></div>
+              </div>
+          </div>
+        </div>
+
+        <!-- 完成层：结算元素由 bind.js 按 CONFIG.complete 动态构建 -->
+        <div id="complete" class="layer hidden"></div>
+
+        <!-- 右下角「退出」：随时按已完成阶段直接结算 -->
+        <button id="exit-btn" class="exit-btn hidden" type="button" aria-label="结束游戏并结算">
+            <img src="/image/结束游戏键.png" alt="结束游戏">
+        </button>
+
+    </div>
+
+    <script src="intro-audio.js"></script>
+    <script src="intro-common.js"></script>
+    <script src="game-bgm.js"></script>
+    <script src="stage-score.js"></script>
+    <script src="bind-audio.js"></script>
+    <script src="settle-audio.js"></script>
+    <script src="bind.js"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#17130e">
+    <link rel="icon" href="data:,">
+    <title>锔瓷记 · 两页阶段组件定位</title>
+    <link rel="stylesheet" href="page-stage-edit.css">
+</head>
+<body>
+    <header class="editor-header">
+        <div>
+            <p class="eyebrow">TWO PAGE STAGE</p>
+            <h1>两页阶段组件定位</h1>
+        </div>
+        <div class="header-actions">
+            <button id="save-btn" class="primary-btn" type="button">保存并应用</button>
+            <button id="reset-btn" class="quiet-btn" type="button">恢复默认</button>
+        </div>
+    </header>
+
+    <main class="editor-layout">
+        <section class="stage-panel">
+            <div class="stage-heading">
+                <span>外层书页保持原始比例，不补背景色</span>
+                <strong id="selection-label">左侧视频静帧</strong>
+            </div>
+            <div class="stage-wrap">
+                <div id="editor-stage" class="editor-stage">
+                    <img class="stage-bg" src="/image/视频/书页.webp" alt="">
+                    <video id="page-left" muted playsinline preload="auto" src="/image/两页/左边.mp4"></video>
+                    <video id="page-right" muted playsinline preload="auto" src="/image/两页/右边.mp4"></video>
+                    <img id="page-border-left" src="/image/两页/border-left-active.webp" alt="">
+                    <img id="page-border-right" src="/image/两页/border-right-active.webp" alt="">
+                    <video id="page-bar-left" muted playsinline preload="auto" src="/image/两页/左条.mp4"></video>
+                    <video id="page-bar-right" muted playsinline preload="auto" src="/image/两页/右条.mp4"></video>
+                </div>
+            </div>
+        </section>
+
+        <aside class="control-panel">
+            <section class="control-section">
+                <div class="section-title">
+                    <h2>组件</h2>
+                    <span id="save-state">未修改</span>
+                </div>
+                <label class="field">
+                    <span>当前组件</span>
+                    <select id="item-select">
+                        <option value="leftVideo">左侧视频静帧</option>
+                        <option value="rightVideo">右侧视频静帧</option>
+                        <option value="borderLeft">左侧活动边框</option>
+                        <option value="borderRight">右侧活动边框</option>
+                        <option value="barLeft">左侧条 MOV</option>
+                        <option value="barRight">右侧条 MOV</option>
+                    </select>
+                </label>
+                <div class="field-grid">
+                    <label class="field">
+                        <span>X %</span>
+                        <input id="left-input" type="number" step="0.01">
+                    </label>
+                    <label class="field">
+                        <span>Y %</span>
+                        <input id="top-input" type="number" step="0.01">
+                    </label>
+                    <label class="field">
+                        <span>宽度 %</span>
+                        <input id="width-input" type="number" step="0.01">
+                    </label>
+                    <label class="field">
+                        <span>高度 %</span>
+                        <input id="height-input" type="number" step="0.01">
+                    </label>
+                </div>
+                <p id="size-note" class="size-note">视频静帧仅调整位置，尺寸与源视频一致。</p>
+            </section>
+
+            <section class="control-section">
+                <div class="section-title">
+                    <h2>导出</h2>
+                    <button id="copy-btn" class="small-btn" type="button">复制配置</button>
+                </div>
+                <textarea id="layout-output" readonly spellcheck="false"></textarea>
+            </section>
+        </aside>
+    </main>
+
+    <script src="page-stage-layout.js"></script>
+    <script src="page-stage-edit.js"></script>
+</body>
+</html>

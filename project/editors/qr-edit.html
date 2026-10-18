@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#17130e">
+    <link rel="icon" href="data:,">
+    <title>锔瓷记 · 二维码阶段组件调节</title>
+    <link rel="stylesheet" href="qr-edit.css">
+</head>
+<body>
+    <header class="editor-header">
+        <div>
+            <p class="eyebrow">QR STAGE</p>
+            <h1>二维码阶段组件调节</h1>
+        </div>
+        <div class="header-actions">
+            <button id="save-btn" class="primary-btn" type="button">保存并应用</button>
+            <button id="reset-btn" class="quiet-btn" type="button">恢复默认</button>
+        </div>
+    </header>
+
+    <main class="editor-layout">
+        <section class="stage-panel">
+            <div class="stage-heading">
+                <span>完整页面为最终视觉与裁切参考</span>
+                <strong id="selection-label">书页最后一帧</strong>
+            </div>
+            <div class="stage-wrap">
+                <div id="editor-stage" class="editor-stage">
+                    <img class="editor-page-bg" src="/image/视频/书页.webp" alt="">
+                    <div id="edit-frame" class="edit-frame">
+                        <img class="stage-bottom-bar" src="/image/底条.webp" alt="">
+                        <img id="node-fx-book" src="/image/扫码/书页最后一帧.webp" alt="">
+                        <div id="node-fx-qr-art" class="node-qr-art">
+                            <img class="node-qr-decoration" src="/image/扫码/二维码_名瓷鉴定.png" alt="">
+                            <img id="node-fx-qr-code" src="/image/扫码/二维码码面_名瓷鉴定.png" alt="">
+                        </div>
+                        <img id="node-fx-tip-art" src="/image/扫码/提示条_名瓷鉴定.png" alt="">
+                        <img class="stage-border" src="/image/边框.webp" alt="">
+                    </div>
+                    <button id="node-fx-flip" type="button" aria-label="翻页">
+                        <img id="node-fx-flip-idle" src="/image/扫码/翻页_未点亮.png" alt="">
+                        <img id="node-fx-flip-active" src="/image/扫码/翻页_点亮.png" alt="">
+                    </button>
+                    <img class="editor-frame-logo" src="/image/logo.webp" alt="">
+                    <div id="editor-process" class="editor-process">
+                        <img class="editor-process-base" src="/image/流程条/浅色工艺流程条.webp" alt="">
+                        <div class="process-short-line" data-layout-key="line-0"></div>
+                        <div class="process-short-line" data-layout-key="line-1"></div>
+                        <div class="process-short-line" data-layout-key="line-2"></div>
+                        <div class="process-short-line" data-layout-key="line-3"></div>
+                        <div class="process-short-line" data-layout-key="line-4"></div>
+                        <img class="process-icon" data-layout-key="icon-0" src="/image/流程条/锔瓷缘起.webp" alt="">
+                        <img class="process-icon" data-layout-key="icon-1" src="/image/流程条/名瓷鉴定.webp" alt="">
+                        <img class="process-icon" data-layout-key="icon-2" src="/image/流程条/瓷片清洗.webp" alt="">
+                        <img class="process-icon" data-layout-key="icon-3" src="/image/流程条/找碴对缝.webp" alt="">
+                        <img class="process-icon" data-layout-key="icon-4" src="/image/流程条/绑扎定型.webp" alt="">
+                        <img class="process-icon" data-layout-key="icon-5" src="/image/流程条/·上钉加固·.png" alt="">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <aside class="control-panel">
+            <section class="control-section">
+                <div class="section-title">
+                    <h2>组件</h2>
+                    <span id="save-state">未修改</span>
+                </div>
+                <label class="field">
+                    <span>当前组件</span>
+                    <select id="item-select">
+                        <option value="book">书页最后一帧</option>
+                        <option value="qr">二维码</option>
+                        <option value="tip">提示条</option>
+                        <option value="flip">翻页角标</option>
+                    </select>
+                </label>
+                <div class="field-grid">
+                    <label class="field">
+                        <span>X 中心 %</span>
+                        <input id="left-input" type="number" step="0.01">
+                    </label>
+                    <label class="field">
+                        <span>Y 中心 %</span>
+                        <input id="top-input" type="number" step="0.01">
+                    </label>
+                    <label class="field field-wide">
+                        <span>宽度 %</span>
+                        <input id="width-input" type="number" step="0.01" min="0.5" max="150">
+                    </label>
+                </div>
+            </section>
+
+            <section class="control-section">
+                <div class="section-title">
+                    <h2>导出</h2>
+                    <button id="copy-btn" class="small-btn" type="button">复制配置</button>
+                </div>
+                <textarea id="layout-output" readonly spellcheck="false"></textarea>
+            </section>
+        </aside>
+    </main>
+
+    <script src="process-layout.js"></script>
+    <script src="qr-layout.js"></script>
+    <script src="qr-edit.js"></script>
+</body>
+</html>

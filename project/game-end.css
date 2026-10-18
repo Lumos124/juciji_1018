@@ -1,0 +1,46 @@
+.exit-btn {
+    right: var(--game-end-right, 2.2%);
+    bottom: var(--game-end-bottom, 2.2%);
+    width: var(--game-end-width, 10.5%);
+    max-width: none;
+    aspect-ratio: 1517 / 451;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    font-size: 0;
+    line-height: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.exit-btn img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+}
+
+.exit-btn:hover,
+.exit-btn:focus-visible {
+    background: transparent;
+    color: inherit;
+    transform: translateY(-2px) scale(1.02);
+}
+
+.exit-btn.ready {
+    animation: endGamePrompt 1.15s steps(2, end) infinite;
+}
+
+@keyframes endGamePrompt {
+    0%, 100% {
+        filter: brightness(1);
+        opacity: 1;
+    }
+    50% {
+        filter: brightness(1.35) drop-shadow(0 0 12px rgba(230, 200, 134, 0.7));
+        opacity: 0.58;
+    }
+}

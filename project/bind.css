@@ -1,0 +1,432 @@
+/* ============================================================
+   绑扎定型 · 手机/平板端游戏样式
+   说明：所有视觉常量（颜色/透明度/时长）尽量集中在本文件顶部；
+        位置坐标集中在 bind.js 的 CONFIG 中，便于按文档微调。
+   ============================================================ */
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+:root {
+    --col-bg: #12100c;            /* 整体背景 */
+    --col-ink: #f2ead9;           /* 文字主色 */
+    --col-gold: #e6c886;          /* 金色（高亮脉冲/成就描边） */
+    --col-pink: #ff827b;          /* 起终点之间半透明路径 */
+    --path-opacity: 1;            /* 粉色路径完全不透明 */
+    --highlight-rest-opacity: 0.92; /* 高亮常驻透明度 */
+    --glow-px: 18px;              /* 金色发光半径 */
+    /* —— 移动端真实可用视口：解决微信顶/底栏占位导致 100vh 算错/画面被裁 ——
+       默认值 100vh/100vw 作为 fallback，实际值由 JS 同步 window.innerWidth/innerHeight */
+    --app-height: 100vh;
+    --app-width:  100vw;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+    /* 用真实可用视口尺寸（排除微信顶/底栏）而不是 100vh，避免 bottom 被裁切 */
+    width: var(--app-width, 100vw);
+    height: var(--app-height, 100vh);
+    overflow: hidden;
+    background: var(--col-bg);
+    color: var(--col-ink);
+    font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none;           /* 阻止页面滚动，手势全由游戏处理 */
+    user-select: none;
+}
+
+/* 舞台 */
+#stage {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: var(--app-width, 100vw);
+    height: var(--app-height, 100vh);
+    overflow: hidden;
+}
+
+.layer {
+    position: absolute;
+    inset: 0;
+    will-change: opacity, transform;
+}
+
+.fill {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;            /* 开幕/背景铺满 */
+    display: block;
+}
+
+.hidden { display: none !important; }
+
+/* ---------- 黑屏 ---------- */
+#blackout { background: #000; opacity: 0; pointer-events: none; }
+#blackout.dim { opacity: 1; transition: opacity 2.6s ease; }
+/* 结算前黑屏：盖住边框和 logo，渐渐变黑 */
+#blackout.settle-dim {
+    opacity: 1;
+    z-index: 220;
+    transition: opacity 1.2s ease;
+}
+
+/* ---------- 操作台背景亮起 ---------- */
+#table-bg {
+    object-fit: cover;
+    opacity: 0;
+    animation: bgBreathe 9s ease-in-out infinite;
+}
+#table-bg.show { opacity: 1; transition: opacity 1.4s ease; }
+/* 背景微微放大，慢速循环 */
+@keyframes bgBreathe {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.03); }
+}
+
+/* ---------- 提示图通用 ---------- */
+.prompt {
+    position: absolute;
+    object-fit: contain;
+    z-index: 5;
+    pointer-events: none;
+}
+#prompt-move {
+    /* 初始提示条贴屏幕底部，参考名瓷鉴定底部提示的满宽布局 */
+    position: fixed !important;
+    left: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: auto !important;
+    transform: none !important;
+    object-fit: contain !important;
+    z-index: 210 !important;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+}
+#prompt-move.show { opacity: 1; }
+
+/* 提示——开始绑扎定型（闪烁，点击进入） */
+#prompt-start-nail {
+    position: absolute;
+    z-index: 8;
+    pointer-events: none;
+    object-fit: contain;
+    opacity: 0;
+}
+
+/* 四瓣花（瓷杯下层，位置由 JS 按 CONFIG.components 写入） */
+#flower {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    object-fit: contain;
+    opacity: 0;
+}
+
+/* 右侧底图（井、十、绕） */
+#bottom-jing, #bottom-shi, #bottom-rao {
+    position: absolute;
+    z-index: 2;
+    object-fit: contain;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* 滑动icon（从左侧滑入，在边框下层） */
+#slide-icon {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    object-fit: contain;
+    opacity: 0;
+}
+
+/* 闪烁（由 JS 控制实/虚交替） */
+.blink { animation: none; }
+
+/* ---------- 主玩区：等比缩放容器（关键：PC / 手机 / 平板视觉 1:1 一致） ----------
+   思路：把"瓷杯+面板"整体当作一张 16:9 的设计稿固定比例盒子。
+   任意设备窗口内，按 object-fit:contain 思路居中显示；盒子内所有坐标都是相对%，
+   保证跨端组件相对位置 / 相对大小完全一致，只整体变大或变小。          */
+#play-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* 基础间距 1.2%，遇到 iPhone 刘海/底部横条时，自动顶到安全区外（不被遮挡） */
+    padding:
+        max(1.2%, env(safe-area-inset-top,    0px))
+        max(1.2%, env(safe-area-inset-right,  0px))
+        max(1.2%, env(safe-area-inset-bottom, 0px))
+        max(1.2%, env(safe-area-inset-left,  0px));
+    z-index: 4;
+}
+#play {
+    /* 16:9 设计稿基准盒 —— 关键：max-width/max-height 必须用"真实可用高度 --app-height"算
+       如果继续用 100vh，微信浏览器顶/底占位栏会让 100vh > 实际可视高度，
+       结果就是底部被裁切 + 宽度按错误高度放大 → 比例与电脑端不一致。 */
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    max-width: calc(var(--app-height, 100vh) * 16 / 9);
+    height: auto;
+    max-height: var(--app-height, 100vh);
+    /* 瓷杯/面板改为 absolute，left/top/height 由 CONFIG.components 控制 */
+    position: relative;
+}
+
+/* 瓷杯盒：left/top/height/aspect-ratio 由 JS 写入 */
+#cup-box {
+    position: absolute;
+    touch-action: none;
+    animation: cupBreathe 6s ease-in-out infinite;
+}
+#cup-box .fill, #cup { width: 100%; height: 100%; object-fit: fill; display: block; }
+/* 呼吸感：整杯连同路径/起终点一起轻微缩放位移，不影响杯内组件的相对位置 */
+@keyframes cupBreathe {
+    0%, 100% { translate: 0 0; scale: 1; }
+    10%      { translate: 0.05% -0.03%; scale: 1.004; }
+    20%      { translate: -0.04% 0.05%; scale: 1.007; }
+    35%      { translate: 0.06% 0.04%; scale: 1.01; }
+    50%      { translate: -0.07% -0.05%; scale: 1.012; }
+    65%      { translate: 0.04% -0.06%; scale: 1.008; }
+    80%      { translate: -0.05% 0.03%; scale: 1.004; }
+}
+
+/* 成就面板盒：left/top/height/aspect-ratio 由 JS 写入 */
+#panel-box {
+    position: absolute;
+}
+
+/* SVG 覆盖层：铺满 cup-box，0-100 坐标系 */
+#cup-svg, #ink-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+#cup-svg { z-index: 7; }
+#ink-svg { z-index: 8; pointer-events: none; }
+#ink-path {
+    fill: none;
+    stroke: var(--col-gold);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.9;
+}
+
+/* 起终点之间的粉色路径：起点细终点粗的渐变带状，两端半圆贴合起终点；
+   上层粉色柔化，下层白色柔化并各自带投影，形成立体层次 */
+.tip-path {
+    fill: var(--col-pink);
+    fill-opacity: 1;
+    stroke: none;
+    transition: opacity 0.12s linear;
+    filter:
+        blur(0.6px)
+        drop-shadow(0 0 5px rgba(255,140,133,0.45))
+        drop-shadow(0 0 14px rgba(255,120,115,0.28))
+        drop-shadow(0 2px 3px rgba(110,32,28,0.3))
+        drop-shadow(0 7px 12px rgba(110,32,28,0.22));
+}
+/* 白色柔化底层：垫在粉色光带下方，自身带投影，形成立体厚度 */
+.tip-thick {
+    fill: #fffdf7;
+    fill-opacity: 0.95;
+    filter:
+        blur(1.6px)
+        drop-shadow(0 2px 4px rgba(96,38,28,0.26))
+        drop-shadow(0 1px 2px rgba(96,38,28,0.18));
+}
+
+/* 高亮层 */
+#highlights {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 6;
+}
+.highlight {
+    position: absolute;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    filter: drop-shadow(0 0 var(--glow-px) var(--col-gold));
+}
+.highlight.shown { opacity: var(--highlight-rest-opacity); }
+
+/* 起终点图标：图源/宽度由 JS 按 CONFIG.components.endpoints 写入 */
+#endpoints {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 7;
+}
+.endpoint {
+    position: absolute;
+    aspect-ratio: 1 / 1;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+    animation: endpointFadeIn 0.6s ease forwards;
+}
+.endpoint.start { filter: drop-shadow(0 0 1.2% rgba(255,190,190,0.8)); }
+.endpoint.end { filter: drop-shadow(0 0 1.8% rgba(230,200,134,0.95)); }
+@keyframes endpointFadeIn {
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* ---------- 成就面板槽位（位置/尺寸由 bind.js 从 CONFIG.slots 逐元素 inline 写入，以与编辑器输出一致） ---------- */
+#slots { position: absolute; inset: 0; pointer-events: none; }
+.slot { position: absolute; }
+.slot-achievement {
+    display: none;               /* 完成前隐藏 */
+    overflow: visible;
+}
+/* 成就展示：高亮闪一下→消失（视觉大加强版：3.2s总时长 + 放大1.28x峰值 + 超大金辉外框）
+   配合 JS：add shown+flashBrief → 延迟 3200ms 后 remove */
+.slot-achievement.shown { display: block; }
+.slot-achievement.flash-brief { animation: achFlashBrief 3.2s cubic-bezier(.2,.8,.2,1) both; }
+
+/* 最终全部完成：三槽一起再庆祝闪一大次→消失（更强） */
+.slot-achievement.celebrate { animation: achCelebrate 3.2s cubic-bezier(.2,.8,.2,1) both; }
+
+@keyframes achFlashBrief {
+    0%   { transform: scale(0.55); opacity: 0; filter: drop-shadow(0 0 0 var(--col-gold)); }
+    10%  { transform: scale(1.28); opacity: 1;
+           filter: drop-shadow(0 0 calc(var(--glow-px)*7.5) var(--col-gold))
+                   drop-shadow(0 0 calc(var(--glow-px)*3)   var(--col-gold))
+                   drop-shadow(0 0 28px rgba(255,220,140,0.85)); }
+    16%  { transform: scale(1.12); opacity: 1;
+           filter: drop-shadow(0 0 calc(var(--glow-px)*4) var(--col-gold)); }
+    76%  { transform: scale(1.06); opacity: 1;
+           filter: drop-shadow(0 0 calc(var(--glow-px)*2.5) var(--col-gold)); }
+    100% { transform: scale(0.92); opacity: 0; filter: drop-shadow(0 0 0 var(--col-gold)); }
+}
+@keyframes achCelebrate {
+    0%   { transform: scale(0.6);  opacity: 0; }
+    14%  { transform: scale(1.35); opacity: 1;
+           filter: drop-shadow(0 0 calc(var(--glow-px)*10) var(--col-gold))
+                   drop-shadow(0 0 calc(var(--glow-px)*4)  var(--col-gold))
+                   drop-shadow(0 0 52px rgba(255,220,140,0.95)); }
+    22%  { transform: scale(1.14); opacity: 1;
+           filter: drop-shadow(0 0 calc(var(--glow-px)*5.5) var(--col-gold)); }
+    78%  { transform: scale(1.08); opacity: 1;
+           filter: drop-shadow(0 0 calc(var(--glow-px)*3) var(--col-gold)); }
+    100% { transform: scale(0.94); opacity: 0; }
+}
+
+/* 成就文字横幅（偏左）：和成就图同节奏(3.2s)一起闪→消失，更大更亮 */
+.slot-text {
+    display: none;
+    opacity: 0;
+    overflow: visible;
+}
+.slot-text.shown { display: block; }
+.slot-text.flash-brief { animation: textFlashBrief 3.2s cubic-bezier(.2,.8,.2,1) both; }
+.slot-text img { width: 100%; height: 100%; object-fit: contain; display: block; }
+@keyframes textFlashBrief {
+    0%   { opacity: 0; transform: translateY(-50%) translateX(calc(-20% - 14px)); filter: drop-shadow(0 0 0 var(--col-gold)); }
+    14%  { opacity: 1; transform: translateY(-50%) translateX(calc(0%));
+           filter: drop-shadow(0 0 calc(var(--glow-px)*4.5) var(--col-gold))
+                   drop-shadow(0 0 18px rgba(255,220,140,0.8)); }
+    78%  { opacity: 1; transform: translateY(-50%) translateX(calc(0%));
+           filter: drop-shadow(0 0 calc(var(--glow-px)*2.2) var(--col-gold)); }
+    100% { opacity: 0; transform: translateY(-50%) translateX(calc(-10%)); filter: drop-shadow(0 0 0 var(--col-gold)); }
+}
+
+/* ---------- 滑入动画：瓷杯从左、面板从右 ---------- */
+#play.slide-in #cup-box    { animation: slideInLeft 0.9s ease-out both; }
+#play.slide-in #panel-box  { animation: slideInRight 0.9s ease-out both; }
+@keyframes slideInLeft  { from { transform: translateX(-130%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideInRight { from { transform: translateX(130%);  opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* ---------- 完成层：结算背景 + 动态组件（元素由 bind.js 构建） ---------- */
+#complete {
+    z-index: 230;
+    display: block;
+    background: #000;
+    pointer-events: none;
+}
+
+/* ---------- 右下角「退出」：随时结束本局，按已完成阶段结算 ---------- */
+.exit-btn {
+    position: absolute;
+    right: max(20px, env(safe-area-inset-right, 0px) + 16px);
+    bottom: max(18px, env(safe-area-inset-bottom, 0px) + 14px);
+    z-index: 40;
+    padding: 0.62em 1.4em;
+    font-size: clamp(14px, 1.25vw, 26px);
+    letter-spacing: 0.2em;
+    text-indent: 0.2em;
+    color: var(--col-gold);
+    background: rgba(18, 16, 12, 0.62);
+    border: 1px solid rgba(201, 164, 92, 0.62);
+    border-radius: 999px;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.exit-btn:hover,
+.exit-btn:focus-visible {
+    background: var(--col-gold);
+    color: var(--col-bg);
+    outline: none;
+    transform: translateY(-1px);
+}
+
+.exit-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+#complete.show { display: block; }
+.complete-comp {
+    position: absolute;
+    pointer-events: none;
+    object-fit: contain;
+}
+.complete-bg {
+    object-fit: contain;   /* 完整显示整张结算背景，不裁切 */
+}
+/* 结算内容框：与主玩区同尺寸，整体落在边框内部 */
+.complete-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    max-width: calc(var(--app-height, 100vh) * 16 / 9);
+    height: auto;
+    max-height: var(--app-height, 100vh);
+}
+
+/* ---------- 横屏提示（窄竖屏时） ---------- */
+#rotate-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: var(--col-bg);
+    color: var(--col-ink);
+    text-align: center;
+    padding: 24px;
+    font-size: 0.92rem;
+    letter-spacing: 0.16em;
+}
+@media (max-aspect-ratio: 3/4) {
+    #rotate-hint { display: flex; }
+}

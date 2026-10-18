@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#12100c">
+    <link rel="icon" href="data:,">
+    <title>锔瓷记</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="fx.css">
+</head>
+<body>
+    <!-- 动效层先完整结束，再进入下方故事视频与流程条时间轴 -->
+    <div class="fx-root">
+        <img id="page-bg" src="/image/视频/书页.webp" alt="">
+
+        <div id="fx-scene">
+            <div id="fx-frame">
+                <div class="video-container">
+                    <video id="main-video" muted playsinline preload="auto">
+                        <source src="main-video.mp4" type="video/mp4">
+                        您的浏览器不支持视频播放
+                    </video>
+                    <video id="proxy-video" muted playsinline preload="auto" onerror="if (!this.dataset.fallback) { this.dataset.fallback = '1'; this.src = 'main-video.mp4'; this.load(); }">
+                        <source src="main-video-proxy.mp4" type="video/mp4" onerror="if (!this.parentNode.dataset.fallback) { this.parentNode.dataset.fallback = '1'; this.parentNode.src = 'main-video.mp4'; this.parentNode.load(); }">
+                    </video>
+                </div>
+
+                <img id="fx-mask" src="/image/视频/遮罩.webp" alt="">
+                <img id="fx-boy" src="/image/视频/瓷片小男孩.webp" alt="">
+                <img id="fx-vertical-bar" src="/image/视频/竖条.webp" alt="">
+                <img id="fx-logo" src="/image/视频/logo.webp" alt="">
+                <img id="fx-token" src="/image/视频/令牌.webp" alt="">
+                <img id="fx-text-1" src="/image/视频/文字1.png" alt="" data-steps="18">
+                <img id="fx-text-2" src="/image/视频/文字2.png" alt="" data-steps="22">
+                <img id="fx-text-3" src="/image/视频/文字3.png" alt="" data-steps="11">
+                <img id="fx-text-4" src="/image/视频/文字4.png" alt="" data-steps="4">
+                <!-- 节点动效：底条 + 游戏标题 + 书页动效 + 二维码条 + 提示条 + 翻页角标 -->
+                <div id="node-fx">
+                    <img id="node-fx-bar" class="nf-layer" src="/image/底条.webp" alt="">
+                    <img id="node-fx-title" class="nf-layer" alt="">
+                    <img id="node-fx-book" class="nf-layer" src="/image/扫码/书页最后一帧.webp" alt="">
+                    <img id="node-fx-book-anim" class="nf-layer" src="/image/扫码/书页最后一帧.webp" alt="">
+                    <div id="node-fx-card" class="nf-layer">
+                        <div id="node-fx-qr-art" class="node-qr-art">
+                            <img class="node-qr-decoration" src="/image/扫码/二维码_名瓷鉴定.png" alt="">
+                            <img id="node-fx-qr-code" src="/image/扫码/二维码码面_名瓷鉴定.png" alt="">
+                        </div>
+                        <img id="node-fx-tip-art" src="/image/扫码/提示条_名瓷鉴定.png" alt="">
+                    </div>
+                </div>
+                <img id="fx-frame-img" src="/image/边框.webp" alt="">
+            </div>
+
+            <div id="page-stage" class="page-stage" aria-hidden="true">
+                <video id="page-left" muted playsinline preload="auto" src="/image/两页/左边.mp4"></video>
+                <video id="page-right" muted playsinline preload="auto" src="/image/两页/右边.mp4"></video>
+                <video id="page-bar-left" muted playsinline preload="auto">
+                    <source src="/image/两页/左.mov" type="video/quicktime">
+                    <source src="/image/两页/左条.mp4" type="video/mp4">
+                </video>
+                <video id="page-bar-right" muted playsinline preload="auto">
+                    <source src="/image/两页/右.mov" type="video/quicktime">
+                    <source src="/image/两页/右条.mp4" type="video/mp4">
+                </video>
+                <img id="page-mask-left" class="page-mask" src="/image/两页/遮罩层.webp" alt="">
+                <img id="page-mask-right" class="page-mask" src="/image/两页/遮罩层.webp" alt="">
+                <img id="page-border-left" class="page-border" src="/image/两页/border-left-active.webp" alt="">
+                <img id="page-border-right" class="page-border" src="/image/两页/border-right-active.webp" alt="">
+                <img id="page-side-left" class="page-side" src="/image/两页/侧边条-左.png" alt="">
+                <img id="page-side-right" class="page-side" src="/image/两页/侧边条-右.png" alt="">
+            </div>
+
+            <div id="fx-caption-zone">
+                <img id="fx-monologue-1" src="/image/视频/独白1.webp" alt="">
+                <img id="fx-monologue-2" src="/image/视频/独白2.webp" alt="">
+                <div id="fx-process" class="process-bar" aria-hidden="true">
+                    <img class="process-layer process-base" src="/image/流程条/浅色工艺流程条.webp" alt="">
+                    <div id="process-reveal">
+                        <img class="process-layer process-progress-bar" src="/image/流程条/浅色工艺流程条.webp" alt="">
+                    </div>
+                    <div class="process-glow process-logo process-logo-icon pl-0" data-layout-key="icon-0">
+                        <img src="/image/流程条/锔瓷缘起.webp" alt="">
+                    </div>
+                    <div class="process-glow process-logo process-logo-icon pl-1" data-layout-key="icon-1">
+                        <img src="/image/流程条/名瓷鉴定.webp" alt="">
+                    </div>
+                    <div class="process-glow process-logo process-logo-icon pl-2" data-layout-key="icon-2">
+                        <img src="/image/流程条/瓷片清洗.webp" alt="">
+                    </div>
+                    <div class="process-glow process-logo process-logo-icon pl-3" data-layout-key="icon-3">
+                        <img src="/image/流程条/找碴对缝.webp" alt="">
+                    </div>
+                    <div class="process-glow process-logo process-logo-icon pl-4" data-layout-key="icon-4">
+                        <img src="/image/流程条/绑扎定型.webp" alt="">
+                    </div>
+                    <div class="process-glow process-logo process-logo-icon pl-5" data-layout-key="icon-5">
+                        <img src="/image/流程条/·上钉加固·.png" alt="">
+                    </div>
+                    <span class="process-short-line" data-layout-key="line-0" aria-hidden="true"></span>
+                    <span class="process-short-line" data-layout-key="line-1" aria-hidden="true"></span>
+                    <span class="process-short-line" data-layout-key="line-2" aria-hidden="true"></span>
+                    <span class="process-short-line" data-layout-key="line-3" aria-hidden="true"></span>
+                    <span class="process-short-line" data-layout-key="line-4" aria-hidden="true"></span>
+                </div>
+            </div>
+            <button id="node-fx-flip" class="nf-layer" type="button" aria-label="翻页继续">
+                <img id="node-fx-flip-idle" src="/image/扫码/翻页_未点亮.png" alt="">
+                <img id="node-fx-flip-active" src="/image/扫码/翻页_点亮.png" alt="">
+            </button>
+            <img id="fx-frame-logo" src="/image/logo.webp" alt="">
+        </div>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">正在装载瓷片</p>
+    </div>
+
+    <audio id="story-bgm" src="/audio/游戏初始界面/1.小游戏初始界面的背景音乐循环播放.mp3" loop preload="auto"></audio>
+
+    <div id="scroll-hint" class="scroll-hint">
+        <span class="hint-line"></span>
+        <p>滚动探索</p>
+    </div>
+
+    <button id="intro-gate" class="intro-gate hidden" type="button" aria-label="查看介绍视频">
+        <span class="intro-gate-icon" aria-hidden="true"></span>
+        <span class="intro-gate-label">查看介绍视频</span>
+    </button>
+
+    <div id="end-overlay" class="end-overlay hidden">
+        <div class="node-card end-card">
+            <p class="node-step">故事收束</p>
+            <h2 class="node-title">碎裂之处，皆有重光</h2>
+            <p class="node-desc">四道工序走完，锔瓷的故事在此告一段落。</p>
+            <button class="documentary-link" id="documentary-btn" type="button">查看据此相关纪录片</button>
+            <button class="end-replay-link" id="replay-btn" type="button">重新开始</button>
+        </div>
+    </div>
+
+    <div id="media-viewer" class="media-viewer hidden" aria-hidden="true">
+        <video id="media-video" playsinline preload="auto" controls></video>
+        <button id="media-close" class="media-close" type="button" aria-label="关闭视频">关闭</button>
+    </div>
+
+    <script src="vendor/qrcode-bundle.js"></script>
+    <script src="editors/process-layout.js"></script>
+    <script src="editors/qr-layout.js"></script>
+    <script src="editors/page-stage-layout.js"></script>
+    <script src="script.js"></script>
+    <script src="fx.js"></script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#12100c">
+    <link rel="icon" href="data:,">
+    <title>焗瓷记 · 手机互动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 20px;
+            background:
+                radial-gradient(circle at 50% 20%, rgba(127, 157, 139, 0.18), transparent 46%),
+                #12100c;
+            color: #f2ead9;
+            font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+            text-align: center;
+        }
+
+        .panel {
+            width: min(92vw, 420px);
+            padding: 34px 24px 30px;
+            border: 1px solid rgba(233, 220, 192, 0.22);
+            border-radius: 8px;
+            background: rgba(26, 22, 17, 0.82);
+            box-shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        .step {
+            font-size: 0.78rem;
+            letter-spacing: 0.34em;
+            color: #c9a45c;
+            margin-bottom: 12px;
+        }
+
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            margin-bottom: 18px;
+        }
+
+        p {
+            font-size: 0.94rem;
+            line-height: 1.9;
+            color: rgba(242, 234, 217, 0.68);
+            margin-bottom: 26px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 7px 16px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(176, 74, 47, 0.55);
+            border-radius: 999px;
+            color: #e6c886;
+            font-size: 0.76rem;
+            letter-spacing: 0.16em;
+        }
+
+        a {
+            display: inline-block;
+            padding: 12px 26px;
+            border: 1px solid #c9a45c;
+            border-radius: 2px;
+            color: #e6c886;
+            text-decoration: none;
+            letter-spacing: 0.26em;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <p class="step" id="step-text">手机 AR 互动</p>
+        <h1 id="node-title">正在进入互动</h1>
+        <span class="badge">AR 小游戏 · 正在跳转</span>
+        <p>扫码成功，正在进入对应环节的小游戏。</p>
+        <a href="index.html">返回电脑端</a>
+    </div>
+
+    <script>
+        (function () {
+            var id = new URLSearchParams(location.search).get('node');
+            // 四个环节分别交给独立的小游戏页面。
+            var routes = {
+                n01_identify: 'check.html',
+                n02_align: 'align.html',
+                n03_bind: 'bind.html',
+                n04_nail: 'nail.html'
+            };
+            if (routes[id]) {
+                location.replace(routes[id]);
+                return;
+            }
+            const nodes = {
+                n01_identify: ['第一环节', '名瓷鉴定'],
+                n02_align: ['第二环节', '找碴对缝'],
+                n03_bind: ['第三环节', '绑扎定型'],
+                n04_nail: ['第四环节', '打孔上钉']
+            };
+            const hit = nodes[id];
+            if (hit) {
+                document.getElementById('step-text').textContent = '手机 AR 互动 · ' + hit[0];
+                document.getElementById('node-title').textContent = hit[1];
+            }
+        })();
+    </script>
+</body>
+</html>

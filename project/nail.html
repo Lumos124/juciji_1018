@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#12100c">
+    <link rel="icon" href="data:,">
+    <title>锔瓷记 · 打孔上钉</title>
+    <link rel="stylesheet" href="nail.css">
+    <link rel="stylesheet" href="game-end.css">
+    <script src="editors/game-end-layout.js"></script>
+    <link rel="stylesheet" href="intro.css">
+</head>
+<body>
+    <!-- 舞台：所有图层都在此绝对定位 -->
+    <div id="stage">
+
+        <!-- 起始选段动画层（背景 + 4 段位字，点击后淡出） -->
+        <div id="intro-overlay">
+            <video id="intro-bg" muted autoplay playsinline></video>
+        </div>
+
+        <!-- 持久边框：贯穿游戏始终，fixed 全屏，z-index 50 -->
+        <img id="frame-img" alt="">
+
+        <!-- 黑屏遮罩（透明度由 JS 控制 0→1） -->
+        <div id="blackout" class="layer fill"></div>
+
+        <!-- 3. 工作台背景（黑屏后再亮起时显示） -->
+        <img id="table-bg" class="layer fill hidden" src="/image/游戏/上钉/image/工作台背景.webp" alt="">
+
+        <!-- 4. 提示：移至操作台（亮起后淡入显示，停留后消失） -->
+        <img id="prompt-move" class="layer hidden" src="/image/游戏/上钉/image/提示——移至操作台 .png" alt="">
+
+        <!-- 5. 提示：开始体验（瓷杯上滑时下方渐显，瓷杯上移前消失） -->
+        <img id="prompt-start" class="prompt hidden" src="/image/游戏/上钉/image/提示——开始体验.webp" alt="">
+
+        <!-- 6. 提示：连孔上钉（瓷杯上方渐显，闪烁两下，瓷杯上移后移位→渐暗→被上钉替代） -->
+        <img id="prompt-connect-nail" class="prompt hidden" src="/image/游戏/上钉/image/提示——连孔上钉.webp" alt="">
+
+        <!-- 7. 提示：上钉（替代连孔上钉，点击后进入底图渐显） -->
+        <img id="prompt-nail" class="prompt hidden blink" src="/image/游戏/上钉/image/提示——上钉.png" alt="">
+
+        <!-- 8. 主玩区：瓷杯（含底图、孔、连线 SVG、成就图层） -->
+        <div id="play-stage" class="hidden">
+          <div id="play" class="hidden">
+              <div id="cup-box">
+                  <img id="cup" class="fill" src="/image/游戏/上钉/image/瓷杯底图.webp" alt="">
+                  <div id="bases"></div>
+                  <div id="nail-prompts"></div>
+                  <svg id="cup-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"></svg>
+                  <div id="holes"></div>
+                  <div id="hole-hint"></div>
+                  <div id="achievements"></div>
+              </div>
+              <!-- 瓷杯顶部"连线"提示（每钉完成后渐显） -->
+              <img id="prompt-connect" class="prompt hidden" src="/image/游戏/上钉/image/提示——连线.webp" alt="">
+          </div>
+        </div>
+
+        <!-- 完成层：结算元素由 nail.js 按 CONFIG.complete 动态构建 -->
+        <div id="complete" class="layer hidden"></div>
+
+        <!-- 右下角「退出」：随时按已完成阶段直接结算 -->
+        <button id="exit-btn" class="exit-btn hidden" type="button" aria-label="结束游戏并结算">
+            <img src="/image/结束游戏键.png" alt="结束游戏">
+        </button>
+
+    </div>
+
+    <script src="intro-audio.js"></script>
+    <script src="intro-common.js"></script>
+    <script src="game-bgm.js"></script>
+    <script src="stage-score.js"></script>
+    <script src="nail-audio.js"></script>
+    <script src="settle-audio.js"></script>
+    <script src="nail.js"></script>
+</body>
+</html>

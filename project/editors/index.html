@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#17130e">
+    <link rel="icon" href="data:,">
+    <title>锔瓷记 · 可视化编辑器</title>
+    <style>
+        :root {
+            --ink: #17130e;
+            --gold: #c9a45c;
+            --gold-bright: #e6c886;
+            --text: #f2ead9;
+            --muted: rgba(242, 234, 217, 0.62);
+            --line: rgba(233, 220, 192, 0.2);
+        }
+        * { box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: clamp(24px, 5vw, 72px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--ink);
+            color: var(--text);
+            font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+        }
+        main { width: min(100%, 1040px); }
+        p { margin: 0 0 8px; color: var(--gold); font-size: 12px; letter-spacing: 0.26em; }
+        h1 { margin: 0 0 12px; font-size: clamp(28px, 3vw, 48px); font-weight: 500; letter-spacing: 0.1em; }
+        .intro { margin-bottom: 34px; color: var(--muted); font-size: 14px; line-height: 1.8; }
+        .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+        a {
+            min-height: 136px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid var(--line);
+            background: rgba(34, 28, 21, 0.72);
+            color: var(--text);
+            text-decoration: none;
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+        a:hover, a:focus-visible {
+            border-color: var(--gold);
+            outline: none;
+            transform: translateY(-2px);
+        }
+        strong { font-size: 20px; font-weight: 500; letter-spacing: 0.08em; }
+        span { color: var(--muted); font-size: 13px; line-height: 1.7; }
+        @media (max-width: 700px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <p>VISUAL EDITORS</p>
+        <h1>锔瓷记 · 可视化编辑器</h1>
+        <p class="intro">布局修改保存在当前浏览器，并通过共享配置同步到主页面。</p>
+        <div class="grid">
+            <a href="process-edit.html">
+                <strong>流程条组件调节</strong>
+                <span>调整流程条图标、图标间短线和整体进度布局。</span>
+            </a>
+            <a href="qr-edit.html">
+                <strong>二维码阶段组件调节</strong>
+                <span>调整书页、二维码、提示条和下一页角标。</span>
+            </a>
+            <a href="page-stage-edit.html">
+                <strong>两页阶段组件定位</strong>
+                <span>调整左右静帧、活动边框和左右条 MOV。</span>
+            </a>
+            <a href="game-end-edit.html">
+                <strong>结束游戏键布局</strong>
+                <span>统一调整四个游戏结束键的位置和尺寸。</span>
+            </a>
+            <a href="qr-debug.html">
+                <strong>二维码调试</strong>
+                <span>查看和复制游戏入口二维码地址。</span>
+            </a>
+        </div>
+    </main>
+</body>
+</html>
