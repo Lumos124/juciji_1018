@@ -591,7 +591,8 @@
             bottom: 0;
             width: 100vw;
             z-index: 5;
-            pointer-events: none;
+            pointer-events: auto;
+            cursor: pointer;
             opacity: 0;
             animation: alignDescIn 1.5s ease forwards;
         }
@@ -1159,10 +1160,16 @@
                     const im = new Image();
                     im.src = src;
                 });
+                preloadFinishWebp(i);
+            }
+
+            // 预热完成动画 webp：预加载并提前解码，避免换图那一下还要等下载/解码
+            function preloadFinishWebp(i) {
                 const w = ALIGN.finishWebp[i];
                 if (w) {
                     const im = new Image();
                     im.src = w.src;
+                    if (im.decode) im.decode().catch(() => {});
                 }
             }
 
@@ -1330,6 +1337,8 @@
 
                 alignBusy = true;
                 alignDone += 1;   // 本轮的碎片已经拼对，计入完成阶段
+                // 拼对成功立刻预热完成动画 webp，等前两步静态瓷碗走完就能直接接上动画
+                preloadFinishWebp(alignRound);
                 // 拖到正确位置后：就地淡出消失，不做任何位移/缩小
                 btn.classList.remove('dragging');
                 void btn.offsetWidth;
@@ -1359,8 +1368,8 @@
                                     markCompleteReady();
                                 }
                             });
-                        }, 1800);
-                    }, 1300);
+                        }, 620);
+                    }, 1050);
                 }, 420);
             }
 
@@ -1385,6 +1394,8 @@
                 alignRing.classList.remove('celebrate');
                 void alignRing.offsetWidth;
                 alignRing.classList.add('celebrate');
+                // 光圈扩散的同时播放「单次装饰花纹扩散」的伴随音效
+                if (window.AlignAudio) window.AlignAudio.diffuse();
             }
 
             // 播放第 index 块碎片拼合完成的动画 webp，等图片加载完成后播满整轮时长再 resolve
@@ -1472,6 +1483,20 @@
                 }
             }
 
+            // 点击底部文字图：立即淡出并进入下一步
+            function dismissAlignDesc() {
+                if (alignDesc.classList.contains('out') || alignDesc.classList.contains('hidden')) return;
+                clearTimeout(alignIntroTimer);
+                alignDesc.classList.add('out');
+                alignIntroTimer = setTimeout(() => {
+                    alignDesc.classList.add('hidden');
+                    playAlignIntro();
+                    // 文字提示彻底消失后，右下角再出现结束图标
+                    if (exitBtn) exitBtn.classList.remove('hidden', 'ready');
+                }, 700);
+            }
+            alignDesc.addEventListener('click', dismissAlignDesc);
+
             function showGame() {
                 // 进入正式游戏：停「游戏初始界面」BGM，起正式游戏 BGM。
                 if (window.GameBgm) {
@@ -1503,7 +1528,11 @@
                 alignDesc.classList.remove('hidden');
                 if (window.AlignAudio) window.AlignAudio.screen();
                 gameCompleteReady = false;
-                if (exitBtn) exitBtn.classList.remove('hidden', 'ready');
+                // 文字提示消失前先隐藏结束图标，避免和提示文字同屏影响观赏
+                if (exitBtn) {
+                    exitBtn.classList.add('hidden');
+                    exitBtn.classList.remove('ready');
+                }
                 // 只预取前两轮；其余在轮到它时再拉
                 preloadRound(0);
                 preloadRound(1);
@@ -1515,13 +1544,7 @@
                 bg2.src = '/image/游戏/images/背景.webp';
                 // 文字图.png 缓慢淡入 -> 停顿 0.8s -> 文字图淡出消失 -> 再出现提示圆与中央瓷器
                 clearTimeout(alignIntroTimer);
-                alignIntroTimer = setTimeout(() => {
-                    alignDesc.classList.add('out');
-                    alignIntroTimer = setTimeout(() => {
-                        alignDesc.classList.add('hidden');
-                        playAlignIntro();
-                    }, 700);
-                }, 1500 + 800);
+                alignIntroTimer = setTimeout(dismissAlignDesc, 1500 + 800);
             }
 
             // 只有当前游戏（active）的组件可点击进入，其他组件点击不跳转

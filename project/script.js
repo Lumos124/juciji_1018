@@ -88,7 +88,12 @@
         titleHoldMs: 1400,
         titleOutMs: 500,
         assetInMs: 620,
-        flipDelayMs: 420,
+        tipDelayMs: 60,
+        tipInMs: 900,
+        qrDelayMs: 1000,
+        qrInMs: 1500,
+        qrBlinkEveryMs: 5000,
+        flipDelayMs: 2600,
         exitMs: 900,
     };
     // 卡片下方文案：可扫码 / 前置未完成 / 本环节已完成
@@ -158,7 +163,17 @@
             this.fxTimers = [];
 
             // passed：本次会话里已经点过「继续」的节点，往回滚时不再重复拦截。
-            this.nodes = NODES.map((node) => ({ ...node, completed: false, passed: false }));
+            // seen：本次会话里已经播放过节点动效；回退后再次进入时直接出示二维码。
+            this.nodes = NODES.map((node) => ({ ...node, completed: false, passed: false, seen: false }));
+            // 底部流程条图标 → 故事时间（秒）与对应游戏节点。
+            this.processStages = {
+                'icon-0': { time: 0, nodeId: null },
+                'icon-1': { time: 8, nodeId: 'n01_identify' },
+                'icon-2': { time: 21, nodeId: null },
+                'icon-3': { time: 67, nodeId: 'n02_align' },
+                'icon-4': { time: 80, nodeId: 'n03_bind' },
+                'icon-5': { time: 91, nodeId: 'n04_nail' },
+            };
             // 手机端上报的完成状态（/api/state），决定后续节点的小游戏是否解锁。
             this.serverState = {};
             this.duration = 0;
@@ -191,6 +206,8 @@
             this.hasSeenIntroVideo = false;
             this.mediaPlaying = false;
             this.nodeAssetsReady = false;
+            this.qrBlinkTimer = null;
+            this.qrBlinkFadeTimer = null;
             if (typeof window.QR_STAGE_LAYOUT_APPLY === 'function') {
                 window.QR_STAGE_LAYOUT_APPLY(document);
             }
@@ -255,6 +272,17 @@
             }, { passive: true });
 
             this.nodeFxFlip.addEventListener('click', () => this.continueFromNode());
+            const processBar = document.getElementById('fx-process');
+            if (processBar) {
+                processBar.addEventListener('click', (e) => {
+                    const icon = e.target.closest('.process-logo-icon');
+                    if (!icon) return;
+                    if (icon.style.opacity === '0') return;
+                    const stage = this.processStages[icon.getAttribute('data-layout-key')];
+                    if (!stage) return;
+                    this.jumpToStage(stage);
+                });
+            }
             this.replayBtn.addEventListener('click', () => this.replay());
             this.introGate.addEventListener('click', () => this.playIntroVideo());
             this.documentaryBtn.addEventListener('click', () => this.playDocumentary());
@@ -506,6 +534,56 @@
             window.__timelineTime = INTRO_END + story;
         }
 
+        // 底部流程条图标点击：跳到对应阶段；游戏节点在“动效开始前”定位（回退直接出二维码）。
+        jumpToStage(stage) {
+            if (this.state === State.LOADING || this.state === State.ENDED) return;
+            if (!this.hasSeenIntroVideo || this.mediaPlaying) return;
+
+            const current = this.getStoryTime();
+            this.stopCoastPlayback();
+            this.stopCompletionPoll();
+            this.stopNodeFx();
+            this.proxySeekInFlight = false;
+            this.pendingProxySeek = null;
+            this.presenting = false;
+            this.introActive = false;
+            this.introTime = INTRO_END;
+            this.introTarget = INTRO_END;
+            this.lockedNode = null;
+            this.hint.classList.add('dimmed');
+            this.lastWheelAt = performance.now();
+
+            const time = Math.max(0, Math.min(this.duration, stage.time));
+
+            if (stage.nodeId) {
+                const node = this.nodes.find((n) => n.id === stage.nodeId);
+                if (node) {
+                    const backward = time <= current - 0.001;
+                    this.state = State.READY;
+                    this.lastTime = time;
+                    this.targetTime = time;
+                    this.lockNode(node, { skipFx: backward || !!node.seen });
+                    return;
+                }
+            }
+
+            this.state = State.READY;
+            this.lastTime = time;
+            this.targetTime = time;
+            window.__storyTime = time;
+            window.__timelineTime = INTRO_END + time;
+            this.presentJumpedFrame(time);
+        }
+
+        async presentJumpedFrame(time) {
+            const id = ++this.switchId;
+            await this.ensureFrame(this.main, time);
+            if (id !== this.switchId || this.state !== State.READY) return;
+            this.showVideo(this.main);
+            this.syncProxyTo(time);
+            this.syncTimelineExposure();
+        }
+
         finishIntro() {
             if (!this.introActive) return;
             this.introActive = false;
@@ -665,7 +743,7 @@
 
         findNodeToLock(from, to) {
             if (to <= from) return null;
-            // 每次向前跨过节点都重新出示二维码，支持回拨后重玩或第一次体验。
+            // 每次向前跨过节点都会出示二维码：首次播放完整动效，回拨后再进入则直接出示二维码。
             // from 处留一点余量，避免刚点完“继续”因播放时间的细微抖动又把同一个节点锁住。
             const candidates = this.nodes
                 .filter((node) => node.time > from + 0.05 && node.time <= to + 0.001)
@@ -673,7 +751,7 @@
             return candidates.length ? candidates[0] : null;
         }
 
-        lockNode(node) {
+        lockNode(node, opts) {
             this.stopCoastPlayback();
             this.proxySeekInFlight = false;
             this.pendingProxySeek = null;
@@ -684,7 +762,9 @@
             this.state = State.LOCKED;
             this.syncTimelineExposure();
 
-            this.startNodeFx(node);
+            const skipFx = !!(opts && opts.skipFx) || !!node.seen;
+            this.startNodeFx(node, skipFx);
+            node.seen = true;
             this.presentLockedFrame(node.time);
             this.startCompletionPoll(node);
         }
@@ -779,14 +859,14 @@
             return id;
         }
 
-        startNodeFx(node) {
+        startNodeFx(node, skipFx) {
             this.stopNodeFx();
             const fx = this.nodeFx;
             if (!fx) return;
             const token = ++this.fxToken;
             this.nodeAssetsReady = false;
 
-            fx.classList.remove('in', 'title', 'book', 'assets', 'flip-visible', 'flip-ready', 'exiting');
+            fx.classList.remove('in', 'title', 'book', 'assets', 'tip', 'qr', 'flip-visible', 'flip-ready', 'exiting');
             if (this.nodeFxFlip) this.nodeFxFlip.classList.remove('is-visible', 'is-ready', 'is-exiting');
             fx.classList.add('active');
             if (this.nodeFxTitle) this.nodeFxTitle.src = node.fxImage || '';
@@ -797,6 +877,13 @@
             if (this.nodeFxBookAnim) {
                 this.nodeFxBookAnim.src = '/image/扫码/书页最后一帧.webp';
                 this.nodeFxBookAnim.style.opacity = '0';
+            }
+
+            // 回退后再次进入：不重播底条/标题/书页翻页动效，直接定格装饰书并弹出二维码。
+            if (skipFx) {
+                fx.classList.add('in', 'book');
+                this.showNodeAssets();
+                return;
             }
 
             // 1. 底条从左往右划入
@@ -837,9 +924,48 @@
             if (this.nodeFxBookAnim) this.nodeFxBookAnim.style.opacity = '0';
             this.nodeFx.classList.add('assets');
             this.renderNodeCard();
+            // 1. 装饰书定格后：先让正前方的游戏提示条由透明慢慢变清晰
+            this.later(NODE_FX.tipDelayMs, () => {
+                if (this.state !== State.LOCKED) return;
+                this.nodeFx.classList.add('tip');
+            });
+            // 2. 随后二维码缓缓渐显，并在渐显的同时开始每 5 秒消失一次、再重现
+            this.later(NODE_FX.qrDelayMs, () => {
+                if (this.state !== State.LOCKED) return;
+                this.nodeFx.classList.add('qr');
+                this.startQrBlink();
+            });
+            // 3. 提示条出现后翻页角标再亮起，保证剧情能继续推进
             this.later(NODE_FX.flipDelayMs, () => {
                 if (this.state === State.LOCKED) this.nodeFxFlip.classList.add('is-visible');
             });
+        }
+
+        startQrBlink() {
+            this.stopQrBlink();
+            const code = this.nodeFxQrCode;
+            if (!code) return;
+            const fadeOutMs = 420;
+            const hiddenHoldMs = 400;
+            this.qrBlinkTimer = setInterval(() => {
+                if (!code || code.style.display === 'none') return;
+                code.style.opacity = '0';
+                this.qrBlinkFadeTimer = setTimeout(() => {
+                    if (code) code.style.opacity = '1';
+                }, fadeOutMs + hiddenHoldMs);
+            }, NODE_FX.qrBlinkEveryMs);
+        }
+
+        stopQrBlink() {
+            if (this.qrBlinkTimer) {
+                clearInterval(this.qrBlinkTimer);
+                this.qrBlinkTimer = null;
+            }
+            if (this.qrBlinkFadeTimer) {
+                clearTimeout(this.qrBlinkFadeTimer);
+                this.qrBlinkFadeTimer = null;
+            }
+            if (this.nodeFxQrCode) this.nodeFxQrCode.style.opacity = '';
         }
 
         continueFromNode() {
@@ -853,6 +979,7 @@
         stopNodeFx() {
             this.fxToken++;
             this.clearFxTimers();
+            this.stopQrBlink();
             this.nodeAssetsReady = false;
             if (this.nodeFxBook) {
                 this.nodeFxBook.src = '/image/扫码/书页最后一帧.webp';
@@ -862,7 +989,7 @@
                 this.nodeFxBookAnim.style.opacity = '0';
             }
             if (this.nodeFx) {
-                this.nodeFx.classList.remove('active', 'in', 'title', 'book', 'assets', 'flip-visible', 'flip-ready', 'exiting');
+                this.nodeFx.classList.remove('active', 'in', 'title', 'book', 'assets', 'tip', 'qr', 'flip-visible', 'flip-ready', 'exiting');
             }
             if (this.nodeFxFlip) this.nodeFxFlip.classList.remove('is-visible', 'is-ready', 'is-exiting');
             if (this.nodeFxCard) this.nodeFxCard.classList.remove('locked', 'done');
@@ -1087,6 +1214,7 @@
             this.nodes.forEach((node) => {
                 node.completed = false;
                 node.passed = false;
+                node.seen = false;
             });
             this.stopNodeFx();
             this.endOverlay.classList.add('hidden');

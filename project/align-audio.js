@@ -9,6 +9,7 @@
      提示小条滑入 + 4 个碎片出现 → 4.提示小条滑入，与4个小碎片出现
      按下碎片开始拖动           → 5.点击瓷器时播放的音效
      拼合成功、大瓷器出现        → 6.大瓷器碎片出现时的音效
+     拼合成功、底部光圈波光扩散   → 7.单次装饰花纹扩散动画的伴随音效
      拼合完成动画 webp 播放      → 9.瓷器旋转变化的音效
 
    背景音乐由 game-bgm.js 管理，本文件不处理背景音乐。
@@ -24,6 +25,7 @@
         fragments: DIR + '4.提示小条滑入，与4个小碎片出现.mp3',
         click: DIR + '5.点击瓷器时播放的音效.mp3',
         bigFragment: DIR + '6.大瓷器碎片出现时的音效.mp3',
+        diffuse: DIR + '7.单次装饰花纹扩散动画的伴随音效.mp3',
         rotate: DIR + '9.瓷器旋转变化的音效.mp3',
     };
 
@@ -41,6 +43,7 @@
         fragments: make(FILES.fragments),
         click: make(FILES.click),
         bigFragment: make(FILES.bigFragment),
+        diffuse: make(FILES.diffuse),
         rotate: make(FILES.rotate),
     };
 
@@ -67,6 +70,7 @@
         fragments() { play(sfx.fragments); },
         click() { play(sfx.click); },
         bigFragment() { play(sfx.bigFragment); },
+        diffuse() { play(sfx.diffuse); },
         rotate() { play(sfx.rotate); },
         sfx,
     };

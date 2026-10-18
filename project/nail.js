@@ -269,7 +269,11 @@ function startIntro() {
     // 进入正式游戏：停掉「游戏初始界面」BGM，起「正式游戏」BGM（四个小游戏共用）
     if (window.GameBgm) window.GameBgm.start();
     endReady = false;
-    if (exitBtn) exitBtn.classList.remove('hidden', 'ready');
+    // 移至操作台提示消失前先隐藏结束图标，避免和提示文字同屏影响观赏
+    if (exitBtn) {
+        exitBtn.classList.add('hidden');
+        exitBtn.classList.remove('ready');
+    }
     lightUp();
 }
 
@@ -293,6 +297,8 @@ function lightUp() {
         promptMove.style.opacity = '0';
         setTimeout(() => {
             promptMove.classList.add('hidden');
+            // 文字提示彻底消失后，右下角再出现结束图标
+            if (exitBtn) exitBtn.classList.remove('hidden', 'ready');
             slideInCup();
         }, CONFIG.timings.moveFadeMs);
     };

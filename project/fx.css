@@ -512,15 +512,10 @@
     box-shadow: none;
     display: block;
     z-index: 6;
-    opacity: 0;
-    transform: scale(0.96);
+    opacity: 1;
+    transform: none;
     pointer-events: none;
     transition: opacity 620ms ease, transform 620ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-#node-fx.assets #node-fx-card {
-    opacity: 1;
-    transform: scale(1);
 }
 
 #node-fx-qr-art {
@@ -544,6 +539,12 @@
     left: 50%;
     top: 44%;
     width: 68%;
+    opacity: 0;
+    transition: opacity 1500ms ease;
+}
+
+#node-fx.qr #node-fx-qr-art {
+    opacity: 1;
 }
 
 #node-fx-qr-art .node-qr-decoration {
@@ -568,12 +569,20 @@
     object-fit: contain;
     pointer-events: none;
     image-rendering: auto;
+    opacity: 1;
+    transition: opacity 420ms ease;
 }
 
 #node-fx-tip-art {
     left: 50%;
     top: 55%;
     width: 62%;
+    opacity: 0;
+    transition: opacity 900ms ease;
+}
+
+#node-fx.tip #node-fx-tip-art {
+    opacity: 1;
 }
 
 #node-fx-flip {
@@ -804,6 +813,8 @@
 #fx-process .process-logo-icon.is-visible {
     opacity: 1;
     animation: processIconPop 0.62s cubic-bezier(0.17, 0.89, 0.32, 1.25) both;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 @keyframes processIconPop {
