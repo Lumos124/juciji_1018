@@ -471,8 +471,7 @@
 }
 
 /* 新二维码节点：书页动效 → 二维码条 + 提示条 → 翻页角标 */
-#node-fx-book,
-#node-fx-book-anim {
+#node-fx-book {
     left: 50%;
     top: 49%;
     width: 76%;
@@ -490,15 +489,6 @@
 #node-fx.book #node-fx-book {
     opacity: 1 !important;
     transform: translate(-50%, -50%) scale(1);
-}
-
-#node-fx-book-anim {
-    opacity: 0;
-    transition: opacity 80ms linear;
-}
-
-#node-fx.book #node-fx-book-anim {
-    opacity: 1;
 }
 
 #node-fx #node-fx-card {
@@ -657,7 +647,6 @@
 }
 
 #node-fx.exiting #node-fx-book,
-#node-fx.exiting #node-fx-book-anim,
 #node-fx.exiting #node-fx-flip {
     opacity: 0 !important;
     pointer-events: none;

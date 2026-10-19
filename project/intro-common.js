@@ -19,7 +19,7 @@ const ASSET_VERSION = Date.now();
 
 /* ---------------- 共享配置（背景/边框/字图源） ---------------- */
 const SHARED = {
-    background: { src: '/image/背景.mp4', poster: '/image/背景.webp' },
+    background: { src: '/image/背景.mp4?v=20261019-lfs-restore', poster: '/image/背景.webp' },
     frame:      { src: '/image/边框.webp' },
     logo:       { src: '/image/logo.webp', pos: { left: 2, top: 78, width: 18, height: 20 } },
     chars: {

@@ -7,7 +7,7 @@
     <link rel="icon" href="data:,">
     <title>锔瓷记</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="fx.css">
+    <link rel="stylesheet" href="fx.css?v=20261019-book-single">
 </head>
 <body>
     <!-- 动效层先完整结束，再进入下方故事视频与流程条时间轴 -->
@@ -18,11 +18,11 @@
             <div id="fx-frame">
                 <div class="video-container">
                     <video id="main-video" muted playsinline preload="auto">
-                        <source src="main-video.mp4" type="video/mp4">
+                        <source src="main-video.mp4?v=20261019-lfs-restore" type="video/mp4">
                         您的浏览器不支持视频播放
                     </video>
-                    <video id="proxy-video" muted playsinline preload="auto" onerror="if (!this.dataset.fallback) { this.dataset.fallback = '1'; this.src = 'main-video.mp4'; this.load(); }">
-                        <source src="main-video-proxy.mp4" type="video/mp4" onerror="if (!this.parentNode.dataset.fallback) { this.parentNode.dataset.fallback = '1'; this.parentNode.src = 'main-video.mp4'; this.parentNode.load(); }">
+                    <video id="proxy-video" muted playsinline preload="auto" onerror="if (!this.dataset.fallback) { this.dataset.fallback = '1'; this.src = 'main-video.mp4?v=20261019-lfs-restore'; this.load(); }">
+                        <source src="main-video-proxy.mp4?v=20261019-lfs-restore" type="video/mp4" onerror="if (!this.parentNode.dataset.fallback) { this.parentNode.dataset.fallback = '1'; this.parentNode.src = 'main-video.mp4?v=20261019-lfs-restore'; this.parentNode.load(); }">
                     </video>
                 </div>
 
@@ -40,7 +40,6 @@
                     <img id="node-fx-bar" class="nf-layer" src="/image/底条.webp" alt="">
                     <img id="node-fx-title" class="nf-layer" alt="">
                     <img id="node-fx-book" class="nf-layer" src="/image/扫码/书页最后一帧.webp" alt="">
-                    <img id="node-fx-book-anim" class="nf-layer" src="/image/扫码/书页最后一帧.webp" alt="">
                     <div id="node-fx-card" class="nf-layer">
                         <div id="node-fx-qr-art" class="node-qr-art">
                             <img class="node-qr-decoration" src="/image/扫码/二维码_名瓷鉴定.png" alt="">
@@ -53,15 +52,15 @@
             </div>
 
             <div id="page-stage" class="page-stage" aria-hidden="true">
-                <video id="page-left" muted playsinline preload="auto" src="/image/两页/左边.mp4"></video>
-                <video id="page-right" muted playsinline preload="auto" src="/image/两页/右边.mp4"></video>
+                <video id="page-left" muted playsinline preload="auto" src="/image/两页/左边.mp4?v=20261019-lfs-restore"></video>
+                <video id="page-right" muted playsinline preload="auto" src="/image/两页/右边.mp4?v=20261019-lfs-restore"></video>
                 <video id="page-bar-left" muted playsinline preload="auto">
-                    <source src="/image/两页/左.mov" type="video/quicktime">
-                    <source src="/image/两页/左条.mp4" type="video/mp4">
+                    <source src="/image/两页/左.mov?v=20261019-lfs-restore" type="video/quicktime">
+                    <source src="/image/两页/左条.mp4?v=20261019-lfs-restore" type="video/mp4">
                 </video>
                 <video id="page-bar-right" muted playsinline preload="auto">
-                    <source src="/image/两页/右.mov" type="video/quicktime">
-                    <source src="/image/两页/右条.mp4" type="video/mp4">
+                    <source src="/image/两页/右.mov?v=20261019-lfs-restore" type="video/quicktime">
+                    <source src="/image/两页/右条.mp4?v=20261019-lfs-restore" type="video/mp4">
                 </video>
                 <img id="page-mask-left" class="page-mask" src="/image/两页/遮罩层.webp" alt="">
                 <img id="page-mask-right" class="page-mask" src="/image/两页/遮罩层.webp" alt="">
@@ -148,7 +147,7 @@
     <script src="editors/process-layout.js"></script>
     <script src="editors/qr-layout.js"></script>
     <script src="editors/page-stage-layout.js"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=20261019-book-single"></script>
     <script src="fx.js"></script>
 </body>
 </html>

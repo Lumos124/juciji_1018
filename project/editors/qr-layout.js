@@ -70,16 +70,6 @@
             }
             el.style.height = 'auto';
             el.style.aspectRatio = String(cfg.aspect);
-            if (key === 'book') {
-                const animEl = container.querySelector('#node-fx-book-anim');
-                if (animEl) {
-                    animEl.style.left = el.style.left;
-                    animEl.style.top = el.style.top;
-                    animEl.style.width = el.style.width;
-                    animEl.style.height = 'auto';
-                    animEl.style.aspectRatio = String(cfg.aspect);
-                }
-            }
         });
         return current;
     }

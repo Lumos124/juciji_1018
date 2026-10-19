@@ -72,11 +72,11 @@
     const INTRO_END = 7.15;
     const MEDIA_SOURCES = {
         promo: [
-            '/audio/宣传视频.mp4',
+            '/audio/宣传视频.mp4?v=20261019-lfs-restore',
             // 宣传片未单独放入交付包时，用完整视频兜底，入口不会变成死链。
             '/root/完整视频.mp4',
         ],
-        documentary: ['/audio/结尾纪录片视频.mp4'],
+        documentary: ['/audio/结尾纪录片视频.mp4?v=20261019-lfs-restore'],
     };
 
     // 节点动效：底条划入 → 游戏标题渐显渐隐 → 棕色卡片（二维码 + 继续）。
@@ -117,7 +117,8 @@
         });
         ['/image/扫码/二维码_未解锁.png', '/image/扫码/提示条_未解锁.png',
             '/image/扫码/提示条_已完成.png', '/image/扫码/翻页_未点亮.png',
-            '/image/扫码/翻页_点亮.png'].forEach((src) => {
+            '/image/扫码/翻页_点亮.png', '/image/扫码/书页透明.webp',
+            '/image/扫码/书页最后一帧.webp'].forEach((src) => {
             const img = new Image();
             img.src = src;
         });
@@ -143,7 +144,6 @@
             this.nodeFxTitle = document.getElementById('node-fx-title');
             this.nodeFxCard = document.getElementById('node-fx-card');
             this.nodeFxBook = document.getElementById('node-fx-book');
-            this.nodeFxBookAnim = document.getElementById('node-fx-book-anim');
             this.nodeFxQrArt = document.getElementById('node-fx-qr-art');
             this.nodeFxQrDecoration = this.nodeFxQrArt ? this.nodeFxQrArt.querySelector('.node-qr-decoration') : null;
             this.nodeFxQrCode = document.getElementById('node-fx-qr-code');
@@ -874,9 +874,12 @@
             if (this.nodeFxBook) {
                 this.nodeFxBook.src = '/image/扫码/书页最后一帧.webp';
             }
-            if (this.nodeFxBookAnim) {
-                this.nodeFxBookAnim.src = '/image/扫码/书页最后一帧.webp';
-                this.nodeFxBookAnim.style.opacity = '0';
+
+            // 回退后再次进入：不重播底条/标题/书页翻页动效，直接定格装饰书并弹出二维码。
+            if (skipFx) {
+                fx.classList.add('in', 'book');
+                this.showNodeAssets();
+                return;
             }
 
             // 回退后再次进入：不重播底条/标题/书页翻页动效，直接定格装饰书并弹出二维码。
@@ -910,10 +913,7 @@
         playNodeBook() {
             if (!this.nodeFxBook || this.state !== State.LOCKED) return;
             this.nodeFx.classList.add('book');
-            if (this.nodeFxBookAnim) {
-                this.nodeFxBookAnim.src = '/image/扫码/书页透明.webp?play=' + Date.now();
-                this.nodeFxBookAnim.style.opacity = '1';
-            }
+            this.nodeFxBook.src = '/image/扫码/书页透明.webp?play=' + Date.now();
             // 透明 WebP 共 74 帧，20fps，动画结束后切到透明最后一帧定格。
             this.later(3700, () => this.showNodeAssets());
         }
@@ -921,7 +921,7 @@
         showNodeAssets() {
             if (!this.nodeFx || this.state !== State.LOCKED || this.nodeAssetsReady) return;
             this.nodeAssetsReady = true;
-            if (this.nodeFxBookAnim) this.nodeFxBookAnim.style.opacity = '0';
+            if (this.nodeFxBook) this.nodeFxBook.src = '/image/扫码/书页最后一帧.webp';
             this.nodeFx.classList.add('assets');
             this.renderNodeCard();
             // 1. 装饰书定格后：先让正前方的游戏提示条由透明慢慢变清晰
@@ -983,10 +983,6 @@
             this.nodeAssetsReady = false;
             if (this.nodeFxBook) {
                 this.nodeFxBook.src = '/image/扫码/书页最后一帧.webp';
-            }
-            if (this.nodeFxBookAnim) {
-                this.nodeFxBookAnim.src = '/image/扫码/书页最后一帧.webp';
-                this.nodeFxBookAnim.style.opacity = '0';
             }
             if (this.nodeFx) {
                 this.nodeFx.classList.remove('active', 'in', 'title', 'book', 'assets', 'tip', 'qr', 'flip-visible', 'flip-ready', 'exiting');
