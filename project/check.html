@@ -1170,8 +1170,11 @@
     </style>
     <link rel="stylesheet" href="game-end.css">
     <script src="editors/game-end-layout.js"></script>
+    <link rel="stylesheet" href="game-preload.css">
+    <script src="game-preload.js"></script>
 </head>
 <body>
+    <script>if (window.GamePreloader) GamePreloader.mount({ game: 'check', inlineScripts: true, audioApi: 'CheckAudio' });</script>
     <!-- 开场 -->
     <div class="stage intro-stage" id="intro">
         <img class="intro-bg" src="/image/游戏/images/Frame 153.webp" alt="名瓷鉴定开场">
@@ -1261,6 +1264,11 @@
         <img class="settle-scene" src="/image/游戏/images/结算/图像1.webp" alt="学徒与修复作坊">
     </div>
 
+    <!-- 结算提示：游戏结束先弹出提示条，点「结束」进入结算 -->
+    <div class="settle-prompt hidden" id="settle-prompt" aria-hidden="true">
+        <img class="settle-prompt-ui" src="/image/补充/结算提示ui.png" alt="结算提示">
+    </div>
+
     <script src="intro-audio.js"></script>
     <script src="game-bgm.js"></script>
     <script src="stage-score.js"></script>
@@ -1312,6 +1320,7 @@
             const settleScore = $('settle-score');
             const settleBack = $('settle-back');
             const exitBtn = $('exit-btn');
+            const settlePrompt = $('settle-prompt');
             let toastTimer = null;
             // 游戏计时与进度
             let identifyStartTime = 0;
@@ -1644,10 +1653,26 @@
             function markCompleteReady() {
                 if (gameCompleteReady) return;
                 gameCompleteReady = true;
+                showSettlePrompt();
+            }
+
+            // 游戏结束：先弹出「结算提示」，点「结束」再进入结算页
+            function showSettlePrompt() {
                 if (exitBtn) {
                     exitBtn.classList.remove('hidden', 'ready');
                     void exitBtn.offsetWidth;
                     exitBtn.classList.add('ready');
+                }
+                if (settlePrompt) {
+                    settlePrompt.classList.remove('hidden');
+                    settlePrompt.setAttribute('aria-hidden', 'false');
+                }
+            }
+
+            function hideSettlePrompt() {
+                if (settlePrompt) {
+                    settlePrompt.classList.add('hidden');
+                    settlePrompt.setAttribute('aria-hidden', 'true');
                 }
             }
 
@@ -1671,6 +1696,7 @@
             function showSettlement() {
                 // 防止重复触发
                 if (settlement && !settlement.classList.contains('hidden')) return;
+                hideSettlePrompt();
                 clearIdentifyTimer();
                 tip.classList.add('hidden');
                 circle.classList.add('hidden');

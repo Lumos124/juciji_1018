@@ -1,0 +1,126 @@
+/* ============================================================
+   小游戏通用预加载页
+   背景：加载循环动画.mp4（首帧 加载背景.jpg 兜底）
+   外框：外围亮光.png
+   左下：正在加载中 + 底部加载条 / 提亮加载条
+   右下：书页最后一帧.webp
+   ============================================================ */
+
+.game-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    overflow: hidden;
+    background: #090806;
+    opacity: 1;
+    pointer-events: auto;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.55s ease;
+}
+
+.game-loading-stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(100vw, 177.7778vh);
+    aspect-ratio: 16 / 9;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+    background: #090806;
+}
+
+@supports (width: 100dvw) {
+    .game-loading-stage {
+        width: min(100dvw, 177.7778dvh);
+    }
+}
+
+.game-loading.done {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.game-loading-media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    background: #090806;
+}
+
+.game-loading-dim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    /* 加载循环动画本身已经是暗场；不再叠加压暗，保证右下书页透明保持原亮度 */
+    background: transparent;
+}
+
+.game-loading-glow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 1;
+}
+
+.game-loading-ui {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.game-loading-label {
+    position: absolute;
+    left: 4.5%;
+    bottom: 8.5%;
+    width: 9.8%;
+    height: auto;
+    display: block;
+    opacity: 0.95;
+    filter: drop-shadow(0 0 9px rgba(240, 200, 130, 0.28));
+}
+
+.game-loading-bar {
+    position: absolute;
+    left: 4.4%;
+    bottom: 5.7%;
+    width: 67.6%;
+    aspect-ratio: 2496 / 20;
+    --load-progress: 0%;
+}
+
+.game-loading-bar img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    pointer-events: none;
+}
+
+.game-loading-bar-base {
+    filter: brightness(1.08);
+}
+
+.game-loading-bar-fill {
+    clip-path: inset(0 calc(100% - var(--load-progress)) 0 0);
+    transition: clip-path 0.18s linear;
+    filter: brightness(1.12) drop-shadow(0 0 5px rgba(240, 200, 130, 0.35));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-loading-bar-fill {
+        transition: none;
+    }
+}

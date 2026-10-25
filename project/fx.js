@@ -90,6 +90,7 @@
             this.frameImg = document.getElementById('fx-frame-img');
             this.videoBox = document.querySelector('#fx-frame .video-container');
             this.mask = document.getElementById('fx-mask');
+            this.fxCenterLine = document.getElementById('fx-center-line');
             this.boy = document.getElementById('fx-boy');
             this.mono1 = document.getElementById('fx-monologue-1');
             this.mono2 = document.getElementById('fx-monologue-2');
@@ -107,6 +108,7 @@
             this.pageBorderRight = document.getElementById('page-border-right');
             this.pageSideLeft = document.getElementById('page-side-left');
             this.pageSideRight = document.getElementById('page-side-right');
+            this.pageCenterLine = document.getElementById('page-center-line');
             this.lastInputActive = null;
             this.bar = document.getElementById('fx-vertical-bar');
             this.logo = document.getElementById('fx-logo');
@@ -170,6 +172,11 @@
             this.frame.style.opacity = '1';
             const chromeOpacity = this.getChromeOpacity(storyTime);
             const pageSegmentActive = storyTime >= PAGE_SEGMENT.enterStart && storyTime < PAGE_SEGMENT.exitEnd;
+            // 书页中缝从主视频开始一直保留到结尾页；序章不出现，
+            // 两页阶段交给 page-stage 自己的中缝，避免交叉淡出时出现双线。
+            if (this.fxCenterLine) {
+                this.fxCenterLine.style.opacity = t >= INTRO_END - 0.0001 && !pageSegmentActive ? '1' : '0';
+            }
             this.root.classList.toggle('page-segment-active', pageSegmentActive);
             this.frameImg.style.opacity = chromeOpacity.toFixed(4);
             if (this.frameLogo) this.frameLogo.style.opacity = chromeOpacity.toFixed(4);
@@ -289,6 +296,7 @@
                 this.pageBarRight.style.opacity = '0';
                 this.pageSideLeft.style.opacity = '0';
                 this.pageSideRight.style.opacity = '0';
+                if (this.pageCenterLine) this.pageCenterLine.style.opacity = '0';
                 return;
             }
 
@@ -299,6 +307,7 @@
             // 先让左右视频层和遮罩一起渐显；之后左侧遮罩先撤除，右侧遮罩继续保留。
             this.pageLeft.style.opacity = pageVideoOpacity.toFixed(4);
             this.pageRight.style.opacity = pageVideoOpacity.toFixed(4);
+            if (this.pageCenterLine) this.pageCenterLine.style.opacity = pageVideoOpacity.toFixed(4);
             const leftMaskOut = 1 - smooth(storyTime, PAGE_SEGMENT.leftMaskOutStart, PAGE_SEGMENT.leftMaskOutEnd);
             const rightMaskOut = 1 - smooth(storyTime, PAGE_SEGMENT.rightMaskOutStart, PAGE_SEGMENT.rightMaskOutEnd);
             this.pageMaskLeft.style.opacity = (pageVideoOpacity * leftMaskOut).toFixed(4);

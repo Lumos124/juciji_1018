@@ -9,9 +9,12 @@
     <link rel="stylesheet" href="nail.css">
     <link rel="stylesheet" href="game-end.css">
     <script src="editors/game-end-layout.js"></script>
+    <link rel="stylesheet" href="game-preload.css">
+    <script src="game-preload.js"></script>
     <link rel="stylesheet" href="intro.css">
 </head>
 <body>
+    <script>if (window.GamePreloader) GamePreloader.mount({ game: 'nail', audioApi: 'NailAudio', sources: [{ url: 'nail.js', bust: true }, { url: 'intro-common.js' }, { url: 'intro.css' }, { url: 'nail.css' }] });</script>
     <!-- 舞台：所有图层都在此绝对定位 -->
     <div id="stage">
 
@@ -66,6 +69,11 @@
             <img src="/image/结束游戏键.png" alt="结束游戏">
         </button>
 
+    </div>
+
+    <!-- 结算提示：游戏结束先弹出提示条，点「结束」进入结算 -->
+    <div class="settle-prompt hidden" id="settle-prompt" aria-hidden="true">
+        <img class="settle-prompt-ui" src="/image/补充/结算提示ui.png" alt="结算提示">
     </div>
 
     <script src="intro-audio.js"></script>

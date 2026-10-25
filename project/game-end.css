@@ -44,3 +44,34 @@
         opacity: 0.58;
     }
 }
+
+/* ---------- 结算提示：不虚化背景，提示条直接覆盖；右下角「结束」保持原样 ---------- */
+.settle-prompt {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: min(100vw, calc(100vh * 1.7784));
+    aspect-ratio: 6710 / 3774;
+    transform: translate(-50%, -50%);
+    z-index: 400;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.settle-prompt-ui {
+    position: absolute;
+    left: 10.46%;
+    top: 44.91%;
+    width: 79.08%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    pointer-events: none;
+    filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.42));
+    animation: settlePromptPop 0.48s cubic-bezier(0.34, 1.45, 0.64, 1) both;
+}
+
+@keyframes settlePromptPop {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+}

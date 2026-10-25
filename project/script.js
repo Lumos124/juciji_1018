@@ -283,7 +283,7 @@
                     this.jumpToStage(stage);
                 });
             }
-            this.replayBtn.addEventListener('click', () => this.replay());
+            if (this.replayBtn) this.replayBtn.addEventListener('click', () => this.replay());
             this.introGate.addEventListener('click', () => this.playIntroVideo());
             this.documentaryBtn.addEventListener('click', () => this.playDocumentary());
             this.mediaClose.addEventListener('click', () => this.finishMediaPlayback());
@@ -1187,6 +1187,8 @@
             if (id !== this.switchId || this.state !== State.ENDED) return;
             this.showVideo(this.main);
             this.syncTimelineExposure();
+            const fxRoot = document.querySelector('.fx-root');
+            if (fxRoot) fxRoot.classList.add('ending');
             this.endOverlay.classList.remove('hidden');
         }
 
@@ -1213,6 +1215,8 @@
                 node.seen = false;
             });
             this.stopNodeFx();
+            const fxRoot = document.querySelector('.fx-root');
+            if (fxRoot) fxRoot.classList.remove('ending');
             this.endOverlay.classList.add('hidden');
             this.hideIntroGate();
             this.hint.classList.add('dimmed');

@@ -151,6 +151,7 @@ const endpointsBox = $('endpoints');
 const slotsBox = $('slots');
 const complete = $('complete');
 const exitBtn = $('exit-btn');
+const settlePrompt = $('settle-prompt');
 
 /* ---------------- 移动端真实视口适配 ---------------- */
 function syncAppHeight() {
@@ -210,6 +211,7 @@ function lerp(a, b, t) { return a + (b - a) * t; }
 function setStyle(el, obj) { for (const k in obj) el.style[k] = obj[k]; }
 // 一次会话内用同一个版本号：同一张图多次 bust 会命中同一个 URL，不会重复下载。
 const ASSET_VERSION = Date.now();
+window.GAME_ASSET_VERSION = ASSET_VERSION;
 function bust(src) { return src + (src.indexOf('?') >= 0 ? '&' : '?') + 'v=' + ASSET_VERSION; }
 
 /* ---------------- 应用所有 PNG 组件的位置/大小 ---------------- */
@@ -1353,6 +1355,7 @@ function reportComplete() {
 
 // 屏幕渐渐变黑，边框和 logo 与黑屏同步渐隐，再显示结算背景
 function showCompleteScreen() {
+    hideSettlePrompt();
     if (exitBtn) exitBtn.classList.add('hidden');
     if (exitBtn) exitBtn.classList.remove('ready');
     const frame = document.getElementById('frame-img');
@@ -1370,6 +1373,26 @@ function showCompleteScreen() {
     }, 1200);
 }
 
+// 游戏结束：先弹出「结算提示」，点「结束」再进入结算页
+function showSettlePrompt() {
+    if (exitBtn) {
+        exitBtn.classList.remove('hidden', 'ready');
+        void exitBtn.offsetWidth;
+        exitBtn.classList.add('ready');
+    }
+    if (settlePrompt) {
+        settlePrompt.classList.remove('hidden');
+        settlePrompt.setAttribute('aria-hidden', 'false');
+    }
+}
+
+function hideSettlePrompt() {
+    if (settlePrompt) {
+        settlePrompt.classList.add('hidden');
+        settlePrompt.setAttribute('aria-hidden', 'true');
+    }
+}
+
 function finishGame() {
     if (endReady) return;
     endReady = true;
@@ -1385,11 +1408,7 @@ function finishGame() {
         ach.style.transition = `opacity ${CONFIG.timings.achFadeMs}ms ease`;
         requestAnimationFrame(() => { ach.style.opacity = '1'; });
     });
-    if (exitBtn) {
-        exitBtn.classList.remove('hidden', 'ready');
-        void exitBtn.offsetWidth;
-        exitBtn.classList.add('ready');
-    }
+    showSettlePrompt();
 }
 
 // 右下角「结束游戏」：提前结束或完成后点击，进入结算。

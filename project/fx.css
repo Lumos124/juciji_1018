@@ -188,6 +188,23 @@
     height: 99%;
 }
 
+/* 书页中缝：始终位于画面正中，模拟摊开书页中间的折痕 */
+#page-center-line {
+    position: absolute;
+    left: 50%;
+    top: 7.01%;
+    height: 75.07%;
+    width: auto;
+    max-width: none;
+    transform: translateX(-50%);
+    object-fit: contain;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    background: transparent;
+    z-index: 6;
+}
+
 #fx-frame .video-container {
     position: absolute;
     inset: 0;
@@ -218,6 +235,47 @@
     z-index: 2;
     opacity: 0;
     pointer-events: none;
+}
+
+/* 主视频全程书页中缝：居中、贯穿视频画幅 */
+#fx-center-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    height: 100%;
+    width: auto;
+    max-width: none;
+    transform: translateX(-50%);
+    object-fit: contain;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.4s ease;
+}
+
+/* 视频结束进入结尾页时，淡出最后一帧，只保留书页框与结尾图层 */
+.fx-root.ending #fx-frame .video-container {
+    opacity: 0 !important;
+    transition: opacity 0.8s ease;
+}
+
+/* 结尾场景层：与主视频同框，位于外边框下层，透明度略降 */
+#fx-end-layer {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9;
+    transition: opacity 1.1s ease;
+}
+
+.fx-root.ending #fx-end-layer {
+    opacity: 0.9;
 }
 
 #fx-boy {
@@ -841,10 +899,13 @@
     display: none;
 }
 
-/* 节点/结束浮层保持在书页版式之上 */
-.node-overlay,
-.end-overlay {
+/* 节点浮层保持最上层；结束页位于流程条/Logo 之下，保持书页框完整可见 */
+.node-overlay {
     z-index: 80;
+}
+
+.end-overlay {
+    z-index: 60;
 }
 
 .loading-overlay {

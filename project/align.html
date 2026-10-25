@@ -903,8 +903,11 @@
     </style>
     <link rel="stylesheet" href="game-end.css">
     <script src="editors/game-end-layout.js"></script>
+    <link rel="stylesheet" href="game-preload.css">
+    <script src="game-preload.js"></script>
 </head>
 <body>
+    <script>if (window.GamePreloader) GamePreloader.mount({ game: 'align', inlineScripts: true, audioApi: 'AlignAudio' });</script>
     <!-- 开场 -->
     <div class="stage intro-stage" id="intro">
         <img class="intro-bg" src="/image/游戏/images/Frame 153.webp" alt="找碴对缝开场">
@@ -974,6 +977,11 @@
         <img class="settle-scene" src="/image/游戏/images/结算/图像2.webp" alt="学徒与修复作坊">
     </div>
 
+    <!-- 结算提示：游戏结束先弹出提示条，点「结束」进入结算 -->
+    <div class="settle-prompt hidden" id="settle-prompt" aria-hidden="true">
+        <img class="settle-prompt-ui" src="/image/补充/结算提示ui.png" alt="结算提示">
+    </div>
+
     <!-- 底部玩法说明（文字图.png）：挂到 body 下，避免被舞台 transform 锚定，从而真正贴住屏幕左右下边 -->
     <div class="align-desc hidden" id="align-desc">
         <img src="/image/游戏/images/文字图.png" alt="找碴对缝玩法说明">
@@ -1030,6 +1038,7 @@
             const settleScorePorc = $('settle-score-porc');
             const settleScoreSeam = $('settle-score-seam');
             const settleBack = $('settle-back');
+            const settlePrompt = $('settle-prompt');
             const exitBtn = $('exit-btn');
 
             let alignStartTime = 0;
@@ -1452,15 +1461,32 @@
             function markCompleteReady() {
                 if (gameCompleteReady) return;
                 gameCompleteReady = true;
+                showSettlePrompt();
+            }
+
+            // 游戏结束：先弹出「结算提示」，点「结束」再进入结算页
+            function showSettlePrompt() {
                 if (exitBtn) {
                     exitBtn.classList.remove('hidden', 'ready');
                     void exitBtn.offsetWidth;
                     exitBtn.classList.add('ready');
                 }
+                if (settlePrompt) {
+                    settlePrompt.classList.remove('hidden');
+                    settlePrompt.setAttribute('aria-hidden', 'false');
+                }
+            }
+
+            function hideSettlePrompt() {
+                if (settlePrompt) {
+                    settlePrompt.classList.add('hidden');
+                    settlePrompt.setAttribute('aria-hidden', 'true');
+                }
             }
 
             function showSettlement() {
                 if (!settlement.classList.contains('hidden')) return;
+                hideSettlePrompt();
                 const score = computeAlignScore();
                 const fmt = window.formatScore || String;
                 const porc = localStorage.getItem('porcelain_score');
